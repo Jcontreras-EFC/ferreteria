@@ -1,0 +1,48 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  phone     String?
+  role      String   @default("admin") // admin, superadmin, viewer, editor
+  permissions String @default("[]") // JSON array de permisos: ["view", "create", "edit", "delete"]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  image       String?
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Quote {
+  id          String   @id @default(cuid())
+  quoteNumber Int?     @unique // Número secuencial de cotización (Cotización 0000001)
+  name        String
+  email       String
+  whatsapp    String
+  products    String   // JSON string of products
+  total       Float
+  status      String   @default("pending") // pending, sent, completed
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
