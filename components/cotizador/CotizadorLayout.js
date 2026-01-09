@@ -2,43 +2,41 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import Link from 'next/link'
 import { 
-  FiLayout, 
-  FiPackage, 
-  FiUsers, 
-  FiSettings, 
+  FiFileText, 
+  FiCheckCircle, 
+  FiXCircle,
   FiLogOut,
   FiMenu,
   FiX,
-  FiBarChart2,
-  FiUser,
   FiChevronDown,
-  FiCheckCircle,
-  FiFileText
+  FiPackage,
+  FiUser,
+  FiSettings,
+  FiBox,
+  FiCreditCard
 } from 'react-icons/fi'
 
-export default function AdminLayout({ children, user, onLogout }) {
+export default function CotizadorLayout({ children, user, onLogout }) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [sidebarCollapsed, setSidebarCollapsed] = useState(() => {
     if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('sidebarCollapsed')
-      return saved ? JSON.parse(saved) : true // Por defecto colapsado
+      const saved = localStorage.getItem('cotizadorSidebarCollapsed')
+      return saved ? JSON.parse(saved) : true
     }
-    return true // Por defecto colapsado
+    return true
   })
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [hoveredItem, setHoveredItem] = useState(null)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
   const userMenuRef = useRef(null)
 
-  // Guardar estado en localStorage cuando cambie
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('sidebarCollapsed', JSON.stringify(sidebarCollapsed))
+      localStorage.setItem('cotizadorSidebarCollapsed', JSON.stringify(sidebarCollapsed))
     }
   }, [sidebarCollapsed])
 
-  // Cerrar menú de usuario al hacer clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
@@ -56,21 +54,23 @@ export default function AdminLayout({ children, user, onLogout }) {
   }, [userMenuOpen])
 
   const menuItems = [
-    { href: '/admin', icon: FiLayout, label: 'Dashboard', exact: true },
-    { href: '/admin/productos', icon: FiPackage, label: 'Productos' },
-    { href: '/admin/clientes', icon: FiUser, label: 'Clientes' },
-    { href: '/admin/cotizaciones', icon: FiBarChart2, label: 'Cotizaciones' },
-    { href: '/admin/autorizar-despachos', icon: FiCheckCircle, label: 'Autorizar Despachos' },
-    { href: '/admin/boletas-facturas', icon: FiFileText, label: 'Boletas y Facturas' },
-    { href: '/admin/administradores', icon: FiUsers, label: 'Administradores' },
-    { href: '/admin/configuracion', icon: FiSettings, label: 'Configuración' },
+    { href: '/cotizador', icon: FiFileText, label: 'Todas las Cotizaciones', exact: true },
+    { href: '/cotizador?status=pending', icon: FiFileText, label: 'Pendientes' },
+    { href: '/cotizador?status=approved', icon: FiCheckCircle, label: 'Aprobadas' },
+    { href: '/cotizador?status=rejected', icon: FiXCircle, label: 'Rechazadas' },
+    { href: '/cotizador/productos', icon: FiBox, label: 'Inventario' },
+    { href: '/cotizador/boletas-facturas', icon: FiCreditCard, label: 'Boletas y Facturas' },
   ]
 
   const isActive = (href, exact = false) => {
     if (exact) {
-      return router.pathname === href
+      return router.pathname === href && !router.query.status
     }
-    return router.pathname.startsWith(href)
+    if (href.includes('status=')) {
+      const status = href.split('status=')[1]
+      return router.pathname === '/cotizador' && router.query.status === status
+    }
+    return router.pathname === href
   }
 
   const handleLogout = async () => {
@@ -90,7 +90,6 @@ export default function AdminLayout({ children, user, onLogout }) {
           className="fixed inset-0 z-30 lg:block hidden"
           style={{ pointerEvents: 'auto' }}
           onClick={(e) => {
-            // Solo colapsar si el click no fue en el sidebar
             if (e.target === e.currentTarget) {
               setSidebarCollapsed(true)
             }
@@ -105,12 +104,41 @@ export default function AdminLayout({ children, user, onLogout }) {
         } bg-gray-900 text-white ${
           sidebarCollapsed ? 'w-20' : 'w-64'
         } lg:translate-x-0`}
-        onMouseLeave={() => setHoveredItem(null)}
+        onMouseEnter={() => {
+          if (sidebarCollapsed) {
+            setSidebarCollapsed(false)
+          }
+          setHoveredItem(null)
+        }}
+        onMouseLeave={() => {
+          setHoveredItem(null)
+          if (!sidebarCollapsed) {
+            setSidebarCollapsed(true)
+          }
+        }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col h-full">
           {/* Header del sidebar */}
           <div className="flex items-center justify-between p-4 border-b border-gray-800">
+            {!sidebarCollapsed && (
+              <div className="flex items-center space-x-3">
+                <div className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full border-2 border-green-500">
+                  <span className="text-green-500 font-bold text-sm">GRC</span>
+                </div>
+                <div>
+                  <div className="text-sm font-bold">Cotizador</div>
+                  <div className="text-xs text-gray-400">Panel</div>
+                </div>
+              </div>
+            )}
+            {sidebarCollapsed && (
+              <div className="flex items-center justify-center w-full">
+                <div className="flex items-center justify-center w-10 h-10 bg-gray-700 rounded-full border-2 border-green-500">
+                  <span className="text-green-500 font-bold text-sm">GRC</span>
+                </div>
+              </div>
+            )}
             <button
               onClick={() => setSidebarOpen(false)}
               className="lg:hidden text-gray-400 hover:text-white"
@@ -136,12 +164,11 @@ export default function AdminLayout({ children, user, onLogout }) {
                       sidebarCollapsed ? 'justify-center' : 'space-x-3'
                     } px-4 py-3 rounded-lg transition-colors relative ${
                       active
-                        ? 'bg-blue-600 text-white'
+                        ? 'bg-green-600 text-white'
                         : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                     }`}
                     onClick={() => {
                       setMobileMenuOpen(false)
-                      // Expandir automáticamente si está colapsado
                       if (sidebarCollapsed) {
                         setSidebarCollapsed(false)
                       }
@@ -150,7 +177,6 @@ export default function AdminLayout({ children, user, onLogout }) {
                     <Icon size={20} />
                     {!sidebarCollapsed && <span>{item.label}</span>}
                   </Link>
-                  {/* Tooltip cuando está colapsado */}
                   {showTooltip && (
                     <div className="absolute left-full ml-2 top-1/2 transform -translate-y-1/2 z-50 bg-gray-800 text-white px-3 py-2 rounded-lg shadow-lg whitespace-nowrap">
                       {item.label}
@@ -185,18 +211,17 @@ export default function AdminLayout({ children, user, onLogout }) {
             >
               <FiMenu size={24} />
             </button>
-            <h1 className="text-lg font-semibold text-gray-900">Panel Admin</h1>
+            <h1 className="text-lg font-semibold text-gray-900">Panel Cotizador</h1>
             <div className="relative" ref={userMenuRef}>
               <button
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
-                className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center"
+                className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center"
               >
                 <span className="text-white text-sm font-semibold">
                   {user?.name?.charAt(0).toUpperCase()}
                 </span>
               </button>
               
-              {/* Menú desplegable mobile */}
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
                   <div className="px-4 py-2 border-b border-gray-200">
@@ -207,15 +232,39 @@ export default function AdminLayout({ children, user, onLogout }) {
                       {user?.email}
                     </p>
                   </div>
+                  <Link
+                    href="/productos"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <FiPackage size={16} />
+                    <span>Ver Productos</span>
+                  </Link>
+                  <Link
+                    href="/cotizador"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <FiFileText size={16} />
+                    <span>Panel Cotizador</span>
+                  </Link>
+                  <Link
+                    href="/perfil"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <FiSettings size={16} />
+                    <span>Configurar Datos</span>
+                  </Link>
                   <button
                     onClick={() => {
                       handleLogout()
                       setUserMenuOpen(false)
                     }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors text-left"
                   >
                     <FiLogOut size={16} />
-                    Cerrar Sesión
+                    <span>Cerrar Sesión</span>
                   </button>
                 </div>
               )}
@@ -228,7 +277,7 @@ export default function AdminLayout({ children, user, onLogout }) {
           <div className="flex items-center justify-between px-6 py-4">
             <div>
               <h2 className="text-xl font-semibold text-gray-900">
-                {menuItems.find((item) => isActive(item.href, item.exact))?.label || 'Dashboard'}
+                {menuItems.find((item) => isActive(item.href, item.exact))?.label || 'Cotizaciones'}
               </h2>
             </div>
             <div className="relative" ref={userMenuRef}>
@@ -236,14 +285,14 @@ export default function AdminLayout({ children, user, onLogout }) {
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold">
                     {user?.name?.charAt(0).toUpperCase()}
                   </span>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-                  <p className="text-xs text-gray-500">{user?.role}</p>
+                  <p className="text-xs text-gray-500">Cotizador</p>
                 </div>
                 <FiChevronDown 
                   className={`text-gray-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} 
@@ -251,7 +300,6 @@ export default function AdminLayout({ children, user, onLogout }) {
                 />
               </button>
               
-              {/* Menú desplegable */}
               {userMenuOpen && (
                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-1 z-50">
                   <div className="px-4 py-2 border-b border-gray-200">
@@ -262,15 +310,39 @@ export default function AdminLayout({ children, user, onLogout }) {
                       {user?.email}
                     </p>
                   </div>
+                  <Link
+                    href="/productos"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <FiPackage size={16} />
+                    <span>Ver Productos</span>
+                  </Link>
+                  <Link
+                    href="/cotizador"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <FiFileText size={16} />
+                    <span>Panel Cotizador</span>
+                  </Link>
+                  <Link
+                    href="/perfil"
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    onClick={() => setUserMenuOpen(false)}
+                  >
+                    <FiSettings size={16} />
+                    <span>Configurar Datos</span>
+                  </Link>
                   <button
                     onClick={() => {
                       handleLogout()
                       setUserMenuOpen(false)
                     }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors text-left"
                   >
                     <FiLogOut size={16} />
-                    Cerrar Sesión
+                    <span>Cerrar Sesión</span>
                   </button>
                 </div>
               )}
@@ -307,7 +379,7 @@ export default function AdminLayout({ children, user, onLogout }) {
                   href={item.href}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     active
-                      ? 'bg-blue-600 text-white'
+                      ? 'bg-green-600 text-white'
                       : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                   }`}
                   onClick={() => setMobileMenuOpen(false)}
@@ -323,4 +395,3 @@ export default function AdminLayout({ children, user, onLogout }) {
     </div>
   )
 }
-

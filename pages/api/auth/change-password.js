@@ -13,34 +13,50 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'No autorizado' })
     }
 
-    const { currentPassword, newPassword } = req.body
-
-    if (!currentPassword || !newPassword) {
-      return res.status(400).json({ error: 'Contraseña actual y nueva son requeridas' })
-    }
+    const { name, phone, currentPassword, newPassword } = req.body
 
     // Obtener usuario completo con contraseña
     const fullUser = await prisma.user.findUnique({
       where: { id: user.id },
     })
 
-    // Verificar contraseña actual
-    const isValidPassword = await bcrypt.compare(currentPassword, fullUser.password)
+    const updateData = {}
 
-    if (!isValidPassword) {
-      return res.status(401).json({ error: 'Contraseña actual incorrecta' })
+    // Actualizar nombre si se proporciona
+    if (name !== undefined) {
+      updateData.name = name
     }
 
-    // Hash de la nueva contraseña
-    const hashedPassword = await bcrypt.hash(newPassword, 10)
+    // Actualizar teléfono si se proporciona
+    if (phone !== undefined) {
+      updateData.phone = phone
+    }
 
-    // Actualizar contraseña
+    // Actualizar contraseña si se proporciona
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ error: 'Debes ingresar tu contraseña actual para cambiarla' })
+      }
+
+      // Verificar contraseña actual
+      const isValidPassword = await bcrypt.compare(currentPassword, fullUser.password)
+
+      if (!isValidPassword) {
+        return res.status(401).json({ error: 'Contraseña actual incorrecta' })
+      }
+
+      // Hash de la nueva contraseña
+      const hashedPassword = await bcrypt.hash(newPassword, 10)
+      updateData.password = hashedPassword
+    }
+
+    // Actualizar usuario
     await prisma.user.update({
       where: { id: user.id },
-      data: { password: hashedPassword },
+      data: updateData,
     })
 
-    return res.status(200).json({ message: 'Contraseña actualizada exitosamente' })
+    return res.status(200).json({ message: 'Datos actualizados exitosamente' })
   } catch (error) {
     console.error('Error changing password:', error)
     return res.status(500).json({ error: 'Error al cambiar contraseña' })

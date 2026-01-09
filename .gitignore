@@ -48,3 +48,6 @@ Thumbs.db
 
 # Uploads (las imágenes están en Supabase ahora)
 public/uploads/
+
+.vercel
+.env*.local

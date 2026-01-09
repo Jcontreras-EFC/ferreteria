@@ -9,11 +9,14 @@ const PERMISSIONS = [
   { id: 'create', label: 'Crear' },
   { id: 'edit', label: 'Editar' },
   { id: 'delete', label: 'Eliminar' },
+  { id: 'approve', label: 'Aprobar' },
+  { id: 'reject', label: 'Rechazar' },
 ]
 
 const ROLES = [
   { value: 'viewer', label: 'Visualizador', defaultPermissions: ['view'] },
   { value: 'editor', label: 'Editor', defaultPermissions: ['view', 'create', 'edit'] },
+  { value: 'cotizador', label: 'Cotizador', defaultPermissions: ['view', 'approve', 'reject'] },
   { value: 'admin', label: 'Administrador', defaultPermissions: ['view', 'create', 'edit', 'delete'] },
   { value: 'superadmin', label: 'Super Admin', defaultPermissions: ['view', 'create', 'edit', 'delete'] },
 ]
@@ -271,6 +274,8 @@ export default function AdminAdministradores() {
                                 ? 'bg-purple-100 text-purple-800'
                                 : u.role === 'admin'
                                 ? 'bg-blue-100 text-blue-800'
+                                : u.role === 'cotizador'
+                                ? 'bg-orange-100 text-orange-800'
                                 : u.role === 'editor'
                                 ? 'bg-green-100 text-green-800'
                                 : 'bg-gray-100 text-gray-800'
@@ -339,7 +344,8 @@ export default function AdminAdministradores() {
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     required
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                    style={{ color: '#111827' }}
                   />
                 </div>
 
@@ -353,7 +359,8 @@ export default function AdminAdministradores() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
                     disabled={!!editingUser}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 text-gray-900 bg-white"
+                    style={{ color: '#111827' }}
                   />
                 </div>
 
@@ -366,7 +373,8 @@ export default function AdminAdministradores() {
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required={!editingUser}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                    style={{ color: '#111827' }}
                   />
                 </div>
 
@@ -377,10 +385,11 @@ export default function AdminAdministradores() {
                   <select
                     value={formData.role}
                     onChange={(e) => handleRoleChange(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                    style={{ color: '#111827' }}
                   >
                     {ROLES.map((role) => (
-                      <option key={role.value} value={role.value}>
+                      <option key={role.value} value={role.value} style={{ color: '#111827', backgroundColor: '#ffffff' }}>
                         {role.label}
                       </option>
                     ))}

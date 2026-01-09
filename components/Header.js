@@ -1,8 +1,9 @@
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useCart } from '../contexts/CartContext'
 import { useAuth } from '../contexts/AuthContext'
+import { FiUser, FiSettings, FiLogOut, FiChevronDown, FiPackage, FiFileText } from 'react-icons/fi'
 
 export default function Header() {
   const router = useRouter()
@@ -10,8 +11,28 @@ export default function Header() {
   const { user, logout, isAuthenticated } = useAuth()
   const [searchQuery, setSearchQuery] = useState('')
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
+  const userMenuRef = useRef(null)
   
   const isAdmin = user && ['admin', 'superadmin', 'editor', 'viewer'].includes(user.role)
+  const isCotizador = user && ['admin', 'superadmin', 'cotizador', 'vendedor'].includes(user.role)
+
+  // Cerrar menú de usuario al hacer clic fuera
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setUserMenuOpen(false)
+      }
+    }
+
+    if (userMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [userMenuOpen])
 
   const handleSearch = (e) => {
     e.preventDefault()
@@ -78,30 +99,78 @@ export default function Header() {
               )}
             </Link>
             {isAuthenticated ? (
-              <>
-                {user && (
-                  <Link
-                    href="/mis-cotizaciones"
-                    className="hover:text-blue-400 transition-colors text-sm"
-                  >
-                    Mis Cotizaciones
-                  </Link>
-                )}
-                {isAdmin && (
-                  <Link
-                    href="/admin"
-                    className="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg transition-colors text-sm"
-                  >
-                    Panel Admin
-                  </Link>
-                )}
+              <div className="relative" ref={userMenuRef}>
                 <button
-                  onClick={logout}
-                  className="bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition-colors text-sm"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  className="flex items-center space-x-2 bg-gray-800 hover:bg-gray-700 px-4 py-2 rounded-lg transition-colors text-sm"
                 >
-                  Cerrar Sesión
+                  <div className="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                    <FiUser size={16} className="text-white" />
+                  </div>
+                  <span className="text-white">{user?.name || 'Usuario'}</span>
+                  <FiChevronDown 
+                    size={16} 
+                    className={`text-gray-400 transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} 
+                  />
                 </button>
-              </>
+                
+                {/* Menú desplegable */}
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-gray-200">
+                      <p className="text-sm font-semibold text-gray-900">{user?.name || 'Usuario'}</p>
+                      <p className="text-xs text-gray-500 truncate">{user?.email}</p>
+                    </div>
+                    <Link
+                      href="/productos"
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <FiPackage size={16} />
+                      <span>Ver Productos</span>
+                    </Link>
+                    {isCotizador && (
+                      <Link
+                        href="/cotizador"
+                        className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <FiFileText size={16} />
+                        <span>Panel Cotizador</span>
+                      </Link>
+                    )}
+                    {isAdmin && (
+                      <Link
+                        href="/admin"
+                        className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                        onClick={() => setUserMenuOpen(false)}
+                      >
+                        <FiFileText size={16} />
+                        <span>Panel Admin</span>
+                      </Link>
+                    )}
+                    <Link
+                      href="/perfil"
+                      className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      onClick={() => setUserMenuOpen(false)}
+                    >
+                      <FiSettings size={16} />
+                      <span>Configurar Datos</span>
+                    </Link>
+                    <div className="border-t border-gray-200 mt-1"></div>
+                    <button
+                      onClick={() => {
+                        setUserMenuOpen(false)
+                        logout()
+                      }}
+                      className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <FiLogOut size={16} />
+                      <span>Cerrar Sesión</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <Link
                 href="/login"
@@ -168,13 +237,20 @@ export default function Header() {
               </Link>
               {isAuthenticated ? (
                 <>
-                  {user && (
+                  <Link
+                    href="/productos"
+                    className="py-2 hover:text-blue-400 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Ver Productos
+                  </Link>
+                  {isCotizador && (
                     <Link
-                      href="/mis-cotizaciones"
+                      href="/cotizador"
                       className="py-2 hover:text-blue-400 transition-colors"
                       onClick={() => setIsMenuOpen(false)}
                     >
-                      Mis Cotizaciones
+                      Panel Cotizador
                     </Link>
                   )}
                   {isAdmin && (
@@ -186,6 +262,13 @@ export default function Header() {
                       Panel Admin
                     </Link>
                   )}
+                  <Link
+                    href="/perfil"
+                    className="py-2 hover:text-blue-400 transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Configurar Datos
+                  </Link>
                   <button
                     onClick={() => {
                       logout()

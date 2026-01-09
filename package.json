@@ -13,7 +13,9 @@
     "prisma:studio": "prisma studio",
     "actualizar-imagenes": "node scripts/actualizar-imagenes-productos.js",
     "subir-imagen": "node scripts/subir-imagen-producto.js",
-    "subir-todas": "node scripts/subir-todas-imagenes.js"
+    "subir-todas": "node scripts/subir-todas-imagenes.js",
+    "create-cotizador": "node scripts/create-cotizador.js",
+    "deploy": "vercel --prod --yes"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",

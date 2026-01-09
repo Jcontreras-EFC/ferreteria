@@ -16,7 +16,7 @@ model User {
   password  String
   name      String
   phone     String?
-  role      String   @default("admin") // admin, superadmin, viewer, editor
+  role      String   @default("admin") // admin, superadmin, viewer, editor, cotizador, vendedor
   permissions String @default("[]") // JSON array de permisos: ["view", "create", "edit", "delete"]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -34,15 +34,29 @@ model Product {
 }
 
 model Quote {
-  id          String   @id @default(cuid())
-  quoteNumber Int?     @unique // Número secuencial de cotización (Cotización 0000001)
-  name        String
-  email       String
-  whatsapp    String
-  products    String   // JSON string of products
-  total       Float
-  status      String   @default("pending") // pending, sent, completed
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id              String   @id @default(cuid())
+  quoteNumber     Int?     @unique // Número secuencial de cotización (Cotización 0000001)
+  name            String
+  email           String
+  whatsapp        String
+  products        String   // JSON string of products
+  total           Float
+  status          String   @default("pending") // pending, approved, authorized, dispatched, completed, rejected
+  approvedBy      String?  // ID del usuario que aprobó (cotizador)
+  rejectedBy      String?  // ID del usuario que rechazó
+  rejectionReason String?  // Razón del rechazo
+  estimatedDelivery Int?   // Días estimados de entrega
+  notes           String?  // Notas del cotizador
+  authorizedBy    String?  // ID del admin que autorizó el despacho
+  authorizedAt    DateTime? // Fecha de autorización
+  documentType    String?  // 'boleta' o 'factura'
+  documentNumber  String?  // Número de boleta/factura
+  dispatchedAt    DateTime? // Fecha de despacho
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  // Relaciones (opcionales, para cuando se necesiten)
+  // approvedByUser User? @relation("ApprovedQuotes", fields: [approvedBy], references: [id])
+  // rejectedByUser User? @relation("RejectedQuotes", fields: [rejectedBy], references: [id])
 }
 

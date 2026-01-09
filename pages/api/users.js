@@ -68,6 +68,8 @@ export default async function handler(req, res) {
       let defaultPermissions = []
       if (role === 'superadmin' || role === 'admin') {
         defaultPermissions = ['view', 'create', 'edit', 'delete']
+      } else if (role === 'cotizador') {
+        defaultPermissions = ['view', 'approve', 'reject']
       } else if (role === 'editor') {
         defaultPermissions = ['view', 'create', 'edit']
       } else if (role === 'viewer') {

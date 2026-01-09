@@ -1,5 +1,5 @@
 import { prisma } from '../../../../lib/prisma'
-import { generateQuotePDF } from '../../../../lib/pdfGenerator'
+import { generateQuotePDF, generateDocumentPDF } from '../../../../lib/pdfGenerator'
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
@@ -19,16 +19,29 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Cotización no encontrada' })
     }
 
-    // Generar el PDF usando la función mejorada
-    const pdfBuffer = generateQuotePDF(quote)
+    // Si está autorizada y tiene documento, generar boleta/factura
+    // Si no, generar cotización normal
+    let pdfBuffer
+    let filename
+    
+    if (quote.status === 'authorized' && quote.documentType && quote.documentNumber) {
+      // Generar boleta/factura con diseño mejorado
+      pdfBuffer = generateDocumentPDF(quote)
+      const docType = quote.documentType === 'factura' ? 'Factura' : 'Boleta'
+      filename = `${docType}-${quote.documentNumber}.pdf`
+    } else {
+      // Generar cotización normal
+      pdfBuffer = generateQuotePDF(quote)
+      filename = `cotizacion-${quote.quoteNumber || quote.id.slice(0, 8)}.pdf`
+    }
 
     // Configurar headers
     res.setHeader('Content-Type', 'application/pdf')
     res.setHeader(
       'Content-Disposition',
       download === '1'
-        ? `attachment; filename="cotizacion-${quote.id.slice(0, 8)}.pdf"`
-        : `inline; filename="cotizacion-${quote.id.slice(0, 8)}.pdf"`
+        ? `attachment; filename="${filename}"`
+        : `inline; filename="${filename}"`
     )
 
     // Enviar el PDF

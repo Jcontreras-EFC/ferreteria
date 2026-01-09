@@ -66,3 +66,26 @@ a {
   background: #a0aec0;
 }
 
+/* Estilos para campos de formulario - sobrescribir color blanco global */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="tel"],
+input[type="number"],
+select,
+textarea {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+select option {
+  color: #111827 !important;
+  background-color: #ffffff !important;
+}
+
+/* Asegurar que los inputs deshabilitados también tengan color visible */
+input:disabled,
+select:disabled {
+  color: #6b7280 !important;
+  background-color: #f3f4f6 !important;
+}

@@ -41,25 +41,27 @@ export default function Home() {
         <Header />
         <main className="flex-1 pt-20 pb-8">
           {/* Hero Section */}
-          <section className="bg-gradient-to-r from-green-600 to-green-800 py-16">
+          <section className="bg-gradient-to-r from-green-600 to-green-800 py-6 md:py-10">
             <div className="container mx-auto px-4 text-center">
-              <div className="flex items-center justify-center mb-4">
-                <div className="flex items-center justify-center w-20 h-20 bg-white/10 rounded-full border-4 border-white/30 backdrop-blur-sm">
-                  <span className="text-white font-bold text-2xl">GRC</span>
+              <div className="flex items-center justify-center space-x-3 mb-3">
+                <div className="flex items-center justify-center w-14 h-14 bg-white/10 rounded-full border-2 border-white/30 backdrop-blur-sm">
+                  <span className="text-white font-bold text-lg">GRC</span>
+                </div>
+                <div className="text-left">
+                  <h1 className="text-2xl md:text-4xl font-bold text-white leading-tight">
+                    Corporación GRC
+                  </h1>
+                  <p className="text-xs md:text-sm text-green-100">
+                    ISO 9001:2015 Certificado
+                  </p>
                 </div>
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold mb-4 text-white">
-                Corporación GRC
-              </h1>
-              <p className="text-xl md:text-2xl mb-2 text-green-100">
+              <p className="text-base md:text-lg mb-4 text-green-100">
                 Tu ferretería de confianza
-              </p>
-              <p className="text-sm md:text-base mb-8 text-green-200">
-                ISO 9001:2015 Certificado
               </p>
               <a
                 href="/productos"
-                className="bg-white text-green-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-green-50 transition-colors inline-block shadow-lg"
+                className="bg-white text-green-600 px-6 py-2 rounded-lg font-semibold text-sm hover:bg-green-50 transition-colors inline-block shadow-md"
               >
                 Ver Productos
               </a>

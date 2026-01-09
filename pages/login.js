@@ -65,11 +65,15 @@ export default function Login() {
           // Redirigir según el rol del usuario
           const userRole = data.user?.role
           const adminRoles = ['admin', 'superadmin', 'editor', 'viewer']
+          const cotizadorRoles = ['cotizador', 'vendedor']
           
           // Redirigir inmediatamente según el rol
           if (adminRoles.includes(userRole)) {
             // Administradores van al panel de administración
             window.location.href = '/admin'
+          } else if (cotizadorRoles.includes(userRole)) {
+            // Cotizadores/Vendedores van al panel de cotizador
+            window.location.href = '/cotizador'
           } else {
             // Clientes van a la página principal
             window.location.href = '/'
