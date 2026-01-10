@@ -5,7 +5,8 @@ import AdminLayout from '../../components/admin/AdminLayout'
 import { 
   FiEye, FiCheck, FiX, FiDownload, FiFileText, FiSearch, FiFilter, FiCalendar, 
   FiUser, FiMail, FiPhone, FiDollarSign, FiTrendingUp, FiClock, FiCheckCircle,
-  FiChevronDown, FiChevronUp, FiGrid, FiList, FiPrinter
+  FiChevronDown, FiChevronUp, FiGrid, FiList, FiPrinter, FiPackage, FiShoppingCart,
+  FiTag, FiExternalLink, FiXCircle
 } from 'react-icons/fi'
 import * as XLSX from 'xlsx'
 
@@ -771,36 +772,39 @@ export default function AdminCotizaciones() {
                             </div>
                           </td>
                           <td className="px-5 py-4 whitespace-nowrap">
-                            <div className="flex justify-end gap-3">
+                            <div className="flex justify-end gap-2">
                               <button
                                 onClick={() => handleViewQuote(quote)}
-                                className="group relative flex items-center justify-center w-11 h-11 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 hover:-translate-y-0.5 border border-blue-400/30"
+                                className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white rounded-2xl transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-110 hover:-translate-y-1 border-2 border-blue-400/40 hover:border-blue-300/60"
                                 title="Ver detalles"
                               >
-                                <FiEye size={20} className="drop-shadow-sm" />
-                                <span className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none shadow-lg z-50">
+                                <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <FiEye size={22} className="relative z-10 drop-shadow-lg" />
+                                <span className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none shadow-2xl z-50 font-medium">
                                   Ver Detalles
                                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                                 </span>
                               </button>
                               <button
                                 onClick={() => handleViewPdf(quote)}
-                                className="group relative flex items-center justify-center w-11 h-11 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 hover:-translate-y-0.5 border border-purple-400/30"
+                                className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-purple-500 via-purple-600 to-purple-700 hover:from-purple-600 hover:via-purple-700 hover:to-purple-800 text-white rounded-2xl transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-110 hover:-translate-y-1 border-2 border-purple-400/40 hover:border-purple-300/60"
                                 title="Ver PDF"
                               >
-                                <FiFileText size={20} className="drop-shadow-sm" />
-                                <span className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none shadow-lg z-50">
+                                <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <FiFileText size={22} className="relative z-10 drop-shadow-lg" />
+                                <span className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none shadow-2xl z-50 font-medium">
                                   Ver PDF
                                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                                 </span>
                               </button>
                               <button
                                 onClick={() => handleDownloadPdf(quote)}
-                                className="group relative flex items-center justify-center w-11 h-11 bg-gradient-to-br from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-110 hover:-translate-y-0.5 border border-green-400/30"
+                                className="group relative flex items-center justify-center w-12 h-12 bg-gradient-to-br from-green-500 via-green-600 to-green-700 hover:from-green-600 hover:via-green-700 hover:to-green-800 text-white rounded-2xl transition-all duration-300 shadow-xl hover:shadow-2xl transform hover:scale-110 hover:-translate-y-1 border-2 border-green-400/40 hover:border-green-300/60"
                                 title="Descargar PDF"
                               >
-                                <FiDownload size={20} className="drop-shadow-sm" />
-                                <span className="absolute -top-10 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none shadow-lg z-50">
+                                <div className="absolute inset-0 bg-white/20 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                <FiDownload size={22} className="relative z-10 drop-shadow-lg" />
+                                <span className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 whitespace-nowrap pointer-events-none shadow-2xl z-50 font-medium">
                                   Descargar
                                   <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
                                 </span>
@@ -817,124 +821,236 @@ export default function AdminCotizaciones() {
           )}
         </div>
 
-        {/* Modal de Detalles */}
+        {/* Modal de Detalles - Diseño Mejorado */}
         {showModal && selectedQuote && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto shadow-2xl">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-gray-900">Detalles de Cotización</h3>
-                <button
-                  onClick={() => {
-                    setShowModal(false)
-                    setSelectedQuote(null)
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <FiX size={24} />
-                </button>
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
+            <div className="bg-white rounded-2xl w-full max-w-5xl max-h-[95vh] overflow-hidden shadow-2xl border border-gray-200 flex flex-col animate-slideUp">
+              {/* Header del Modal con Gradiente */}
+              <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 px-6 py-5 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+                <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full -ml-24 -mb-24"></div>
+                <div className="relative z-10 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center ring-2 ring-white/30">
+                      <FiFileText className="text-white" size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-2xl font-bold text-white">Detalles de Cotización</h3>
+                      <p className="text-blue-100 text-sm mt-0.5">
+                        {selectedQuote.quoteNumber 
+                          ? `Cotización ${String(selectedQuote.quoteNumber).padStart(7, '0')}`
+                          : `#${selectedQuote.id.slice(0, 8).toUpperCase()}`}
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setShowModal(false)
+                      setSelectedQuote(null)
+                    }}
+                    className="w-10 h-10 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-xl flex items-center justify-center transition-all duration-200 hover:scale-110 ring-2 ring-white/30"
+                  >
+                    <FiXCircle className="text-white" size={22} />
+                  </button>
+                </div>
               </div>
 
-              <div className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <label className="text-sm font-medium text-gray-500">Número de Cotización</label>
-                    <p className="text-gray-900 font-semibold text-lg">
-                      {selectedQuote.quoteNumber 
-                        ? `Cotización ${String(selectedQuote.quoteNumber).padStart(7, '0')}`
-                        : `#${selectedQuote.id.slice(0, 8).toUpperCase()}`}
-                    </p>
-                  </div>
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <label className="text-sm font-medium text-gray-500">Total</label>
-                    <p className="text-green-600 font-bold text-2xl">S/. {selectedQuote.total?.toFixed(2) || '0.00'}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Cliente</label>
-                    <p className="text-gray-900 font-semibold">{selectedQuote.name}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Estado</label>
-                    <span className={`inline-flex items-center px-3 py-1.5 text-xs font-bold rounded-full border ${getStatusColor(selectedQuote.status)}`}>
-                      {getStatusIcon(selectedQuote.status)}
-                      {getStatusLabel(selectedQuote.status)}
-                    </span>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">Email</label>
-                    <p className="text-gray-900">{selectedQuote.email}</p>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium text-gray-500">WhatsApp</label>
-                    <p className="text-gray-900">{selectedQuote.whatsapp}</p>
-                  </div>
-                </div>
+              {/* Contenido del Modal */}
+              <div className="flex-1 overflow-y-auto p-6 bg-gray-50">
+                <div className="space-y-6">
+                  {/* Información Principal en Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* Card Total */}
+                    <div className="bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl p-5 text-white shadow-lg relative overflow-hidden">
+                      <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                      <div className="relative z-10">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center">
+                            <FiDollarSign size={20} />
+                          </div>
+                          <span className="text-green-100 text-sm font-medium">Total</span>
+                        </div>
+                        <p className="text-3xl font-bold">S/. {selectedQuote.total?.toFixed(2) || '0.00'}</p>
+                      </div>
+                    </div>
 
-                <div>
-                  <label className="text-sm font-medium text-gray-500 mb-3 block">Productos</label>
-                  <div className="border border-gray-200 rounded-lg overflow-hidden">
-                    <table className="w-full">
-                      <thead className="bg-gray-50">
-                        <tr>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Producto</th>
-                          <th className="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Cantidad</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Precio Unit.</th>
-                          <th className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {selectedQuote.products?.map((product, index) => (
-                          <tr key={index}>
-                            <td className="px-4 py-3 text-sm text-gray-900">
-                              <div className="font-medium">{product.name}</div>
-                              {product.description && (
-                                <div className="text-xs text-gray-500 mt-0.5">{product.description}</div>
-                              )}
+                    {/* Card Estado */}
+                    <div className="bg-white rounded-xl p-5 shadow-md border-2 border-gray-200">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                          <FiTag className="text-purple-600" size={20} />
+                        </div>
+                        <span className="text-gray-500 text-sm font-medium">Estado</span>
+                      </div>
+                      <span className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-lg ${getStatusColor(selectedQuote.status)} shadow-sm`}>
+                        {getStatusIcon(selectedQuote.status)}
+                        {getStatusLabel(selectedQuote.status)}
+                      </span>
+                    </div>
+
+                    {/* Card Cliente */}
+                    <div className="bg-white rounded-xl p-5 shadow-md border-2 border-gray-200">
+                      <div className="flex items-center gap-3 mb-2">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <FiUser className="text-blue-600" size={20} />
+                        </div>
+                        <span className="text-gray-500 text-sm font-medium">Cliente</span>
+                      </div>
+                      <p className="text-gray-900 font-bold text-lg truncate">{selectedQuote.name}</p>
+                    </div>
+                  </div>
+
+                  {/* Información de Contacto */}
+                  <div className="bg-white rounded-xl p-5 shadow-md border border-gray-200">
+                    <h4 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                      <FiUser className="text-blue-600" size={20} />
+                      Información de Contacto
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                          <FiMail className="text-blue-600" size={18} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">Email</p>
+                          <p className="text-sm font-semibold text-gray-900">{selectedQuote.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                          <FiPhone className="text-green-600" size={18} />
+                        </div>
+                        <div>
+                          <p className="text-xs text-gray-500">WhatsApp</p>
+                          <p className="text-sm font-semibold text-gray-900">{selectedQuote.whatsapp}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tabla de Productos Mejorada */}
+                  <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+                    <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-5 py-4 border-b border-gray-200">
+                      <h4 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                        <FiPackage className="text-indigo-600" size={20} />
+                        Productos ({selectedQuote.products?.length || 0})
+                      </h4>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full">
+                        <thead className="bg-gradient-to-r from-blue-600 to-indigo-700">
+                          <tr>
+                            <th className="px-5 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
+                              <div className="flex items-center gap-2">
+                                <FiPackage size={14} />
+                                Producto
+                              </div>
+                            </th>
+                            <th className="px-5 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">
+                              <div className="flex items-center justify-center gap-2">
+                                <FiShoppingCart size={14} />
+                                Cantidad
+                              </div>
+                            </th>
+                            <th className="px-5 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                              Precio Unit.
+                            </th>
+                            <th className="px-5 py-4 text-right text-xs font-bold text-white uppercase tracking-wider">
+                              Subtotal
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
+                          {selectedQuote.products?.map((product, index) => (
+                            <tr key={index} className={index % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                              <td className="px-5 py-4">
+                                <div className="flex items-start gap-3">
+                                  <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                                    <FiPackage className="text-blue-600" size={18} />
+                                  </div>
+                                  <div>
+                                    <div className="font-semibold text-gray-900">{product.name}</div>
+                                    {product.description && (
+                                      <div className="text-xs text-gray-500 mt-1">{product.description}</div>
+                                    )}
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-5 py-4 text-center">
+                                <span className="inline-flex items-center justify-center w-10 h-10 bg-indigo-100 text-indigo-700 font-bold rounded-lg">
+                                  {product.quantity}
+                                </span>
+                              </td>
+                              <td className="px-5 py-4 text-right text-gray-900 font-medium">
+                                S/. {product.price?.toFixed(2) || '0.00'}
+                              </td>
+                              <td className="px-5 py-4 text-right">
+                                <span className="font-bold text-green-600 text-base">
+                                  S/. {((product.price || 0) * (product.quantity || 0)).toFixed(2)}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                        <tfoot className="bg-gradient-to-r from-green-50 to-emerald-50 border-t-2 border-green-200">
+                          <tr>
+                            <td colSpan="3" className="px-5 py-4 text-right">
+                              <div className="flex items-center justify-end gap-2">
+                                <FiDollarSign className="text-green-600" size={20} />
+                                <span className="text-lg font-bold text-gray-900">Total:</span>
+                              </div>
                             </td>
-                            <td className="px-4 py-3 text-sm text-center text-gray-900">{product.quantity}</td>
-                            <td className="px-4 py-3 text-sm text-right text-gray-900">S/. {product.price?.toFixed(2) || '0.00'}</td>
-                            <td className="px-4 py-3 text-sm text-right font-semibold text-gray-900">
-                              S/. {((product.price || 0) * (product.quantity || 0)).toFixed(2)}
+                            <td className="px-5 py-4 text-right">
+                              <span className="text-2xl font-bold text-green-600">
+                                S/. {selectedQuote.total?.toFixed(2) || '0.00'}
+                              </span>
                             </td>
                           </tr>
-                        ))}
-                      </tbody>
-                      <tfoot className="bg-gray-50">
-                        <tr>
-                          <td colSpan="3" className="px-4 py-3 text-right font-semibold text-gray-900">Total:</td>
-                          <td className="px-4 py-3 text-right font-bold text-lg text-green-600">
-                            S/. {selectedQuote.total?.toFixed(2) || '0.00'}
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
+                        </tfoot>
+                      </table>
+                    </div>
                   </div>
                 </div>
+              </div>
 
-                <div className="flex gap-2 pt-4 border-t">
+              {/* Footer con Botones Mejorados */}
+              <div className="bg-white border-t border-gray-200 px-6 py-4 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-sm text-gray-500">
+                  <FiClock size={16} />
+                  <span>Creada el {new Date(selectedQuote.createdAt).toLocaleDateString('es-PE', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}</span>
+                </div>
+                <div className="flex items-center gap-3">
                   <button
                     onClick={() => {
                       setShowModal(false)
                       handleViewPdf(selectedQuote)
                     }}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg transition-colors font-semibold flex items-center justify-center gap-2"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
-                    <FiFileText size={18} />
+                    <FiExternalLink size={18} />
                     Ver PDF
                   </button>
                   <button
                     onClick={() => handleDownloadPdf(selectedQuote)}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 rounded-lg transition-colors font-semibold flex items-center justify-center gap-2"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
                     <FiDownload size={18} />
-                    Descargar PDF
+                    Descargar
                   </button>
                   <button
                     onClick={() => {
                       setShowModal(false)
                       setSelectedQuote(null)
                     }}
-                    className="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-800 py-2 rounded-lg transition-colors font-semibold"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all duration-200"
                   >
+                    <FiX size={18} />
                     Cerrar
                   </button>
                 </div>
