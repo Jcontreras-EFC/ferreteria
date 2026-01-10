@@ -193,8 +193,8 @@ export default function AdminCotizaciones() {
       doc.text(`Total de cotizaciones: ${filteredQuotes.length}`, margin, yPos)
       yPos += 10
 
-      // Tabla
-      const colWidths = [20, 50, 35, 25, 30]
+      // Tabla con anchos mejorados
+      const colWidths = [12, 55, 40, 28, 35]
       const colHeaders = ['N°', 'Cliente', 'Email', 'Total', 'Estado']
       const colX = [
         margin,
@@ -203,18 +203,31 @@ export default function AdminCotizaciones() {
         margin + colWidths[0] + colWidths[1] + colWidths[2],
         margin + colWidths[0] + colWidths[1] + colWidths[2] + colWidths[3],
       ]
+      const tableWidth = pageWidth - (margin * 2)
+      const rowHeight = 8
 
       // Encabezado de tabla
       doc.setFillColor(59, 130, 246) // blue-500
-      doc.rect(margin, yPos - 8, pageWidth - (margin * 2), 8, 'F')
+      doc.rect(margin, yPos - rowHeight, tableWidth, rowHeight, 'F')
       doc.setTextColor(255, 255, 255)
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(9)
+      
+      // Centrar encabezados
       colHeaders.forEach((header, idx) => {
-        doc.text(header, colX[idx] + 2, yPos - 2)
+        const cellCenterX = colX[idx] + colWidths[idx] / 2
+        doc.text(header, cellCenterX, yPos - 3, { align: 'center' })
       })
+      
+      // Dibujar líneas verticales del encabezado
+      doc.setDrawColor(255, 255, 255)
+      doc.setLineWidth(0.3)
+      for (let i = 1; i < colX.length; i++) {
+        doc.line(colX[i], yPos - rowHeight, colX[i], yPos)
+      }
+      
       doc.setTextColor(0, 0, 0)
-      yPos += 5
+      yPos += 2
 
       // Filas
       doc.setFont('helvetica', 'normal')
@@ -223,33 +236,78 @@ export default function AdminCotizaciones() {
         if (yPos > pageHeight - 30) {
           doc.addPage()
           yPos = margin + 20
+          // Redibujar encabezado
           doc.setFillColor(59, 130, 246)
-          doc.rect(margin, yPos - 8, pageWidth - (margin * 2), 8, 'F')
+          doc.rect(margin, yPos - rowHeight, tableWidth, rowHeight, 'F')
           doc.setTextColor(255, 255, 255)
           doc.setFont('helvetica', 'bold')
           doc.setFontSize(9)
           colHeaders.forEach((header, idx) => {
-            doc.text(header, colX[idx] + 2, yPos - 2)
+            const cellCenterX = colX[idx] + colWidths[idx] / 2
+            doc.text(header, cellCenterX, yPos - 3, { align: 'center' })
           })
+          doc.setDrawColor(255, 255, 255)
+          doc.setLineWidth(0.3)
+          for (let i = 1; i < colX.length; i++) {
+            doc.line(colX[i], yPos - rowHeight, colX[i], yPos)
+          }
           doc.setTextColor(0, 0, 0)
           doc.setFont('helvetica', 'normal')
           doc.setFontSize(8)
-          yPos += 5
+          yPos += 2
         }
 
+        const rowStartY = yPos - 5
+        const rowEndY = yPos + 1
+
+        // Fondo alternado
         if (index % 2 === 0) {
           doc.setFillColor(245, 245, 245)
-          doc.rect(margin, yPos - 4, pageWidth - (margin * 2), 6, 'F')
+          doc.rect(margin, rowStartY, tableWidth, rowHeight, 'F')
         }
 
-        doc.text(String(index + 1), colX[0] + 2, yPos)
-        doc.text(quote.name, colX[1] + 2, yPos)
-        doc.setFontSize(7.5)
-        doc.text(quote.email, colX[2] + 2, yPos)
+        // Dibujar bordes de la fila
+        doc.setDrawColor(220, 220, 220)
+        doc.setLineWidth(0.2)
+        // Línea inferior
+        doc.line(margin, rowEndY, pageWidth - margin, rowEndY)
+        // Líneas verticales
+        for (let i = 1; i < colX.length; i++) {
+          doc.line(colX[i], rowStartY, colX[i], rowEndY)
+        }
+        // Líneas laterales
+        doc.line(margin, rowStartY, margin, rowEndY)
+        doc.line(pageWidth - margin, rowStartY, pageWidth - margin, rowEndY)
+
+        // Texto centrado y alineado
+        const cellCenterY = rowStartY + rowHeight / 2 + 2
+        
+        // N° - Centrado
+        doc.setFont('helvetica', 'normal')
         doc.setFontSize(8)
-        doc.text(`S/. ${quote.total.toFixed(2)}`, colX[3] + 2, yPos)
-        doc.text(getStatusLabel(quote.status), colX[4] + 2, yPos)
-        yPos += 7
+        doc.text(String(index + 1), colX[0] + colWidths[0] / 2, cellCenterY, { align: 'center' })
+        
+        // Cliente - Alineado a la izquierda con padding
+        doc.text(quote.name || 'N/A', colX[1] + 3, cellCenterY)
+        
+        // Email - Alineado a la izquierda con padding, tamaño más pequeño
+        doc.setFontSize(7.5)
+        const emailText = (quote.email || 'N/A').length > 25 
+          ? (quote.email || 'N/A').substring(0, 22) + '...' 
+          : (quote.email || 'N/A')
+        doc.text(emailText, colX[2] + 3, cellCenterY)
+        
+        // Total - Alineado a la derecha
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'bold')
+        doc.text(`S/. ${(quote.total || 0).toFixed(2)}`, colX[3] + colWidths[3] - 3, cellCenterY, { align: 'right' })
+        
+        // Estado - Centrado
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(7.5)
+        doc.text(getStatusLabel(quote.status), colX[4] + colWidths[4] / 2, cellCenterY, { align: 'center' })
+        
+        yPos += rowHeight + 1
       })
 
       // Pie de página
@@ -258,6 +316,7 @@ export default function AdminCotizaciones() {
       doc.setTextColor(100, 100, 100)
       doc.text('Corporación GRC - Av. José Gálvez 1322 Dpto. 302 La Perla - Callao', margin, footerY)
       doc.text('Email: corporaciongrc@gmail.com | WhatsApp: (511) 957 216 908', margin, footerY + 5)
+      doc.text(`Página ${doc.internal.getNumberOfPages()}`, pageWidth - margin, footerY + 5, { align: 'right' })
 
       const pdfBlob = doc.output('blob')
       const url = URL.createObjectURL(pdfBlob)
