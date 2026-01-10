@@ -19,7 +19,7 @@ export default function AdminClientes() {
   const [editingCustomer, setEditingCustomer] = useState(null)
   const [editFormData, setEditFormData] = useState({ email: '', phone: '' })
   const [saving, setSaving] = useState(false)
-  const [viewMode, setViewMode] = useState('cards') // 'cards' or 'table'
+  const [viewMode, setViewMode] = useState('table') // 'cards' or 'table'
   const [sortBy, setSortBy] = useState('name') // 'name', 'totalSpent', 'totalQuotes', 'date'
 
   useEffect(() => {
@@ -338,7 +338,7 @@ export default function AdminClientes() {
 
           {/* Vista de Cards o Tabla */}
           {viewMode === 'cards' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {filteredCustomers.length === 0 ? (
                 <div className="col-span-full bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
                   <FiUsers className="mx-auto text-gray-400" size={48} />
