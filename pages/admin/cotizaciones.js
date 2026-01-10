@@ -23,7 +23,7 @@ export default function AdminCotizaciones() {
   const [dateFrom, setDateFrom] = useState('')
   const [dateTo, setDateTo] = useState('')
   const [showDateFilters, setShowDateFilters] = useState(false)
-  const [viewMode, setViewMode] = useState('cards') // 'cards' or 'table'
+  const [viewMode, setViewMode] = useState('table') // 'cards' or 'table'
 
   useEffect(() => {
     checkAuth()
@@ -343,11 +343,11 @@ export default function AdminCotizaciones() {
       <AdminLayout user={user}>
         <div className="space-y-4">
           {/* Header Compacto con Estadísticas */}
-          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-4">
-            <div className="flex items-center justify-between mb-3">
+          <div className="bg-white rounded-xl shadow-md border border-gray-200 p-3">
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <h1 className="text-lg font-bold text-gray-900">Gestión de Cotizaciones</h1>
-                <p className="text-gray-600 text-xs">
+                <h1 className="text-base font-bold text-gray-900">Gestión de Cotizaciones</h1>
+                <p className="text-gray-600 text-xs mt-0.5">
                   {quotes.length} cotización{quotes.length !== 1 ? 'es' : ''} en total
                 </p>
               </div>
@@ -370,7 +370,7 @@ export default function AdminCotizaciones() {
             </div>
 
             {/* Estadísticas Compactas con Mejor Contraste */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
               <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-3 border-2 border-yellow-300 shadow-sm">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-yellow-800 text-xs font-semibold">Pendientes</span>
@@ -410,62 +410,40 @@ export default function AdminCotizaciones() {
             </div>
           </div>
 
-          {/* Filtros Compactos */}
+          {/* Filtros Compactos en una sola fila */}
           <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 py-3 flex items-center justify-between border-b border-gray-200">
-              <div className="flex items-center gap-2">
-                <FiFilter size={18} className="text-gray-600" />
-                <h2 className="text-base font-bold text-gray-800">Filtros</h2>
-                {(dateFrom || dateTo || statusFilter !== 'all') && (
-                  <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium">
-                    Filtros activos
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setShowDateFilters(!showDateFilters)}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-xs font-medium transition-colors"
-                >
-                  <FiCalendar size={14} />
-                  <span>Fechas</span>
-                  {showDateFilters ? <FiChevronUp size={12} /> : <FiChevronDown size={12} />}
-                </button>
-                <button
-                  onClick={exportToExcel}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors"
-                >
-                  <FiDownload size={14} />
-                  <span>Excel</span>
-                </button>
-                <button
-                  onClick={exportToPDF}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-colors"
-                >
-                  <FiFileText size={14} />
-                  <span>PDF</span>
-                </button>
-              </div>
-            </div>
+            <div className="p-3">
+              <div className="flex flex-wrap items-center gap-2">
+                {/* Título de Filtros */}
+                <div className="flex items-center gap-2 mr-2">
+                  <FiFilter size={16} className="text-gray-600" />
+                  <h2 className="text-sm font-bold text-gray-800">Filtros</h2>
+                  {(dateFrom || dateTo || statusFilter !== 'all') && (
+                    <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                      Filtros activos
+                    </span>
+                  )}
+                </div>
 
-            <div className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <div className="relative">
-                  <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+                {/* Búsqueda */}
+                <div className="relative flex-1 min-w-[200px]">
+                  <FiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                   <input
                     type="text"
                     placeholder="Buscar por cliente, email, WhatsApp o número..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 text-sm"
+                    className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 text-sm"
                     style={{ color: '#111827' }}
                   />
                 </div>
-                <div>
+
+                {/* Estado */}
+                <div className="min-w-[150px]">
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white text-sm"
+                    className="w-full px-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 bg-white text-sm"
                     style={{ color: '#111827' }}
                   >
                     <option value="all">Todos los estados</option>
@@ -477,12 +455,39 @@ export default function AdminCotizaciones() {
                     <option value="rejected">Rechazadas</option>
                   </select>
                 </div>
+
+                {/* Botón Fechas */}
+                <button
+                  onClick={() => setShowDateFilters(!showDateFilters)}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 text-xs font-medium transition-colors whitespace-nowrap"
+                >
+                  <FiCalendar size={14} />
+                  <span>Fechas</span>
+                  {showDateFilters ? <FiChevronUp size={12} /> : <FiChevronDown size={12} />}
+                </button>
+
+                {/* Botones de Exportar */}
+                <button
+                  onClick={exportToExcel}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+                >
+                  <FiDownload size={14} />
+                  <span>Excel</span>
+                </button>
+                <button
+                  onClick={exportToPDF}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+                >
+                  <FiFileText size={14} />
+                  <span>PDF</span>
+                </button>
               </div>
 
+              {/* Filtros de Fecha Colapsables */}
               {showDateFilters && (
-                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200 mb-3">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                    <div>
+                <div className="mt-3 bg-blue-50 rounded-lg p-3 border border-blue-200">
+                  <div className="flex flex-wrap items-end gap-3">
+                    <div className="flex-1 min-w-[150px]">
                       <label className="block text-xs font-medium text-gray-700 mb-1">Desde</label>
                       <div className="relative">
                         <FiCalendar className="absolute left-2 top-1/2 transform -translate-y-1/2 text-blue-600" size={14} />
@@ -495,7 +500,7 @@ export default function AdminCotizaciones() {
                         />
                       </div>
                     </div>
-                    <div>
+                    <div className="flex-1 min-w-[150px]">
                       <label className="block text-xs font-medium text-gray-700 mb-1">Hasta</label>
                       <div className="relative">
                         <FiCalendar className="absolute left-2 top-1/2 transform -translate-y-1/2 text-blue-600" size={14} />
@@ -508,23 +513,22 @@ export default function AdminCotizaciones() {
                         />
                       </div>
                     </div>
-                    <div className="flex items-end">
-                      <button
-                        onClick={() => {
-                          setDateFrom('')
-                          setDateTo('')
-                        }}
-                        className="w-full px-3 py-1.5 bg-white border border-gray-300 rounded text-gray-700 hover:bg-gray-50 text-xs font-medium transition-colors flex items-center justify-center gap-1"
-                      >
-                        <FiX size={14} />
-                        <span>Limpiar</span>
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => {
+                        setDateFrom('')
+                        setDateTo('')
+                      }}
+                      className="px-3 py-1.5 bg-white border border-gray-300 rounded text-gray-700 hover:bg-gray-50 text-xs font-medium transition-colors flex items-center justify-center gap-1 h-[38px]"
+                    >
+                      <FiX size={14} />
+                      <span>Limpiar</span>
+                    </button>
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center justify-between text-xs text-gray-600 pt-2 border-t border-gray-200">
+              {/* Contador de resultados */}
+              <div className="flex items-center justify-between text-xs text-gray-600 pt-2 mt-2 border-t border-gray-200">
                 <span>Mostrando {filteredQuotes.length} de {quotes.length} cotizaciones</span>
               </div>
             </div>
