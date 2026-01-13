@@ -149,27 +149,26 @@ export default function CotizadorProductos() {
       [''],
     ]
     
-    // Encabezados de tabla
-    const headers = [['Nombre*', 'Descripción', 'Precio*', 'Stock', 'Categoría', 'Imagen (URL)']]
+    // Encabezados de tabla - como array simple (no anidado)
+    const headers = ['Nombre*', 'Descripción', 'Precio*', 'Stock', 'Categoría', 'Imagen (URL)']
     
-    // Datos de ejemplo
+    // Datos de ejemplo - cada fila es un array
     const exampleData = [
       ['Martillo Profesional', 'Martillo de acero con mango ergonómico', 25.99, 50, 'Herramientas', ''],
       ['Destornillador Phillips #2', 'Destornillador de punta Phillips tamaño #2', 8.50, 100, 'Herramientas', ''],
       ['Llave Inglesa Ajustable 10"', 'Llave ajustable de acero cromado', 15.99, 75, 'Herramientas', ''],
     ]
     
-    // Combinar todo
+    // Combinar todo - headers como array simple, no anidado
     const allData = [
       ...headerRows,
-      headers,
-      ...exampleData,
+      ['TABLA DE PRODUCTOS:'], // Título de la tabla
+      [''],
+      headers, // Encabezados como array simple
+      ...exampleData, // Datos de ejemplo
       [''],
       ['* Campos requeridos'],
       [''],
-      ['INFORMACIÓN DE CONTACTO:'],
-      ['Corporación GRC - Av. José Gálvez 1322 Dpto. 302 La Perla - Callao'],
-      ['Email: corporaciongrc@gmail.com | WhatsApp: (511) 957 216 908'],
       ['INFORMACIÓN DE CONTACTO:'],
       ['Corporación GRC - Av. José Gálvez 1322 Dpto. 302 La Perla - Callao'],
       ['Email: corporaciongrc@gmail.com | WhatsApp: (511) 957 216 908'],
