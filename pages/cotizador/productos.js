@@ -135,29 +135,45 @@ export default function CotizadorProductos() {
       const GRC_DARK_GREEN = '14532D' // Verde oscuro
       const WHITE = 'FFFFFF'
       
-      // Agregar logo (fila 1, columna A)
+      // Agregar logo GRC (fila 1, columna A) - arriba a la izquierda
       try {
-        // Intentar cargar el logo desde public
-        const logoResponse = await fetch('/logo.png')
+        // Intentar cargar primero logo.png (más compatible con ExcelJS)
+        let logoResponse = await fetch('/logo.png')
+        let logoExtension = 'png'
+        
+        if (!logoResponse.ok) {
+          // Si logo.png no existe, intentar logo-grc.svg (pero ExcelJS no soporta SVG directamente)
+          logoResponse = await fetch('/logo-grc.svg')
+          logoExtension = 'png' // Forzar PNG aunque sea SVG
+        }
+        
         if (logoResponse.ok) {
-          const logoBuffer = await logoResponse.arrayBuffer()
+          const logoArrayBuffer = await logoResponse.arrayBuffer()
+          // Convertir ArrayBuffer a Uint8Array para ExcelJS
+          const logoBuffer = new Uint8Array(logoArrayBuffer)
+          
           const imageId = workbook.addImage({
-            buffer: Buffer.from(logoBuffer),
-            extension: 'png',
+            buffer: logoBuffer,
+            extension: logoExtension,
           })
           
-          // Insertar imagen en A1 con tamaño 80x80
+          // Insertar imagen en A1 con tamaño 80x80, arriba a la izquierda
           worksheet.addImage(imageId, {
             tl: { col: 0, row: 0 },
             ext: { width: 80, height: 80 },
           })
+          
+          // Ajustar altura de la fila 1 para el logo
+          worksheet.getRow(1).height = 60
+        } else {
+          throw new Error('Logo no encontrado')
         }
       } catch (error) {
-        console.log('No se pudo cargar el logo, usando texto:', error)
-        // Si no hay logo, usar texto
+        console.log('No se pudo cargar el logo GRC, usando texto:', error)
+        // Si no hay logo, usar texto estilizado GRC
         const logoCell = worksheet.getCell('A1')
         logoCell.value = 'GRC'
-        logoCell.font = { bold: true, size: 16, color: { argb: 'FF' + WHITE } }
+        logoCell.font = { bold: true, size: 20, color: { argb: 'FF' + WHITE } }
         logoCell.fill = {
           type: 'pattern',
           pattern: 'solid',
@@ -168,10 +184,10 @@ export default function CotizadorProductos() {
         worksheet.getRow(1).height = 60
       }
       
-      // Espacio (fila 2)
-      worksheet.getRow(2).height = 10
+      // Espacio después del logo (fila 2) - más espacio para que la tabla esté claramente abajo
+      worksheet.getRow(2).height = 20
       
-      // Encabezados de tabla (fila 3)
+      // Encabezados de tabla (fila 3) - debajo del logo
       const headers = ['Nombre*', 'Descripción', 'Precio*', 'Stock', 'Categoría', 'Imagen (URL)']
       const headerRow = worksheet.getRow(3)
       
