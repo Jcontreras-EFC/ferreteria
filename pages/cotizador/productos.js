@@ -756,7 +756,7 @@ export default function CotizadorProductos() {
                       </div>
                     </div>
 
-                    {/* Imagen del Producto - Más Compacta */}
+                    {/* Imagen del Producto - Mejorada */}
                     <div className="relative bg-gray-50 p-2">
                       {product.image ? (
                         <img
@@ -877,20 +877,25 @@ export default function CotizadorProductos() {
                           <td className="px-6 py-5">
                             <div className="flex items-center gap-4">
                               {product.image ? (
-                                <div className="relative">
-                                  <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="w-16 h-16 object-cover rounded-xl border-2 border-gray-200 shadow-md hover:shadow-lg transition-shadow"
-                                    onError={(e) => {
-                                      e.target.src = '/placeholder-product.png'
-                                    }}
-                                  />
-                                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white shadow-sm"></div>
+                                <div className="relative flex-shrink-0">
+                                  <div className="w-20 h-20 bg-white rounded-lg border-2 border-gray-300 shadow-sm overflow-hidden">
+                                    <img
+                                      src={product.image}
+                                      alt={product.name}
+                                      className="w-full h-full object-cover"
+                                      onError={(e) => {
+                                        e.target.onerror = null
+                                        e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="80" height="80"%3E%3Crect width="80" height="80" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="10"%3ESin imagen%3C/text%3E%3C/svg%3E'
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white shadow-sm flex items-center justify-center">
+                                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                                  </div>
                                 </div>
                               ) : (
-                                <div className="w-16 h-16 bg-gradient-to-br from-green-100 to-emerald-100 rounded-xl border-2 border-green-200 flex items-center justify-center shadow-md">
-                                  <FiPackage className="text-green-600" size={24} />
+                                <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center shadow-sm flex-shrink-0">
+                                  <FiPackage className="text-gray-400" size={28} />
                                 </div>
                               )}
                               <div className="flex-1 min-w-0">
@@ -898,30 +903,24 @@ export default function CotizadorProductos() {
                                   <div className="w-6 h-6 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
                                     <FiPackage className="text-blue-600" size={12} />
                                   </div>
-                                  <div className="text-base font-bold text-gray-900 truncate">{product.name}</div>
+                                  <div className="font-semibold text-gray-900 text-sm">{product.name}</div>
                                 </div>
                                 {product.description && (
-                                  <div className="text-xs text-gray-500 line-clamp-2 mt-0.5 pl-8">{product.description}</div>
+                                  <div className="text-gray-500 text-xs mt-1 line-clamp-2 pl-8">{product.description}</div>
                                 )}
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                                <FiDollarSign className="text-green-600" size={14} />
-                              </div>
-                              <div className="text-lg font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
-                                S/. {product.price?.toFixed(2) || '0.00'}
-                              </div>
+                              <FiDollarSign className="text-green-600" size={16} />
+                              <span className="text-green-700 font-bold text-base">S/. {product.price?.toFixed(2) || '0.00'}</span>
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <div className="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center border-2 border-indigo-200">
-                                <span className="text-lg font-bold text-indigo-700">{stock}</span>
-                              </div>
-                            </div>
+                            <span className="inline-flex items-center justify-center px-4 py-2 bg-blue-100 text-blue-700 rounded-lg text-sm font-bold border-2 border-blue-200 shadow-sm">
+                              {stock}
+                            </span>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">
                             <span className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-bold rounded-xl border-2 shadow-sm ${stockStatus.bg} ${stockStatus.text} ${stockStatus.border}`}>
