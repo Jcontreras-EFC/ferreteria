@@ -135,45 +135,71 @@ export default function CotizadorProductos() {
       const GRC_DARK_GREEN = '14532D' // Verde oscuro
       const WHITE = 'FFFFFF'
       
+      // Crear logo GRC programáticamente (igual al de la página web)
+      // Logo: círculo verde con texto GRC (como en Header.js y PDFs)
+      const createGRCLogo = () => {
+        return new Promise((resolve) => {
+          const canvas = document.createElement('canvas')
+          canvas.width = 80
+          canvas.height = 80
+          const ctx = canvas.getContext('2d')
+          
+          // Círculo exterior con borde blanco (como en PDFs)
+          const centerX = canvas.width / 2
+          const centerY = canvas.height / 2
+          const radius = 35
+          
+          // Círculo exterior blanco (borde)
+          ctx.beginPath()
+          ctx.arc(centerX, centerY, radius + 2, 0, 2 * Math.PI)
+          ctx.fillStyle = '#FFFFFF'
+          ctx.fill()
+          
+          // Círculo interior verde oscuro GRC
+          ctx.beginPath()
+          ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI)
+          ctx.fillStyle = '#' + GRC_DARK_GREEN
+          ctx.fill()
+          
+          // Texto "GRC" en blanco, centrado
+          ctx.fillStyle = '#FFFFFF'
+          ctx.font = 'bold 24px Arial'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText('GRC', centerX, centerY)
+          
+          // Convertir canvas a blob y luego a buffer
+          canvas.toBlob((blob) => {
+            blob.arrayBuffer().then((arrayBuffer) => {
+              resolve(new Uint8Array(arrayBuffer))
+            })
+          }, 'image/png')
+        })
+      }
+      
       // Agregar logo GRC (fila 1, columna A) - arriba a la izquierda
       try {
-        // Intentar cargar primero logo.png (más compatible con ExcelJS)
-        let logoResponse = await fetch('/logo.png')
-        let logoExtension = 'png'
+        const logoBuffer = await createGRCLogo()
         
-        if (!logoResponse.ok) {
-          // Si logo.png no existe, intentar logo-grc.svg (pero ExcelJS no soporta SVG directamente)
-          logoResponse = await fetch('/logo-grc.svg')
-          logoExtension = 'png' // Forzar PNG aunque sea SVG
-        }
+        const imageId = workbook.addImage({
+          buffer: logoBuffer,
+          extension: 'png',
+        })
         
-        if (logoResponse.ok) {
-          const logoArrayBuffer = await logoResponse.arrayBuffer()
-          // Convertir ArrayBuffer a Uint8Array para ExcelJS
-          const logoBuffer = new Uint8Array(logoArrayBuffer)
-          
-          const imageId = workbook.addImage({
-            buffer: logoBuffer,
-            extension: logoExtension,
-          })
-          
-          // Insertar imagen en A1 con tamaño 80x80, arriba a la izquierda
-          worksheet.addImage(imageId, {
-            tl: { col: 0, row: 0 },
-            ext: { width: 80, height: 80 },
-          })
-          
-          // Ajustar altura de la fila 1 para el logo
-          worksheet.getRow(1).height = 60
-        } else {
-          throw new Error('Logo no encontrado')
-        }
+        // Insertar imagen en A1 con tamaño 80x80, arriba a la izquierda
+        worksheet.addImage(imageId, {
+          tl: { col: 0, row: 0 },
+          ext: { width: 80, height: 80 },
+        })
+        
+        // Ajustar altura de la fila 1 para el logo
+        worksheet.getRow(1).height = 60
       } catch (error) {
-        console.log('No se pudo cargar el logo GRC, usando texto:', error)
-        // Si no hay logo, usar texto estilizado GRC
+        console.log('Error creando logo GRC, usando texto estilizado:', error)
+        // Fallback: logo estilizado con texto
         const logoCell = worksheet.getCell('A1')
         logoCell.value = 'GRC'
-        logoCell.font = { bold: true, size: 20, color: { argb: 'FF' + WHITE } }
+        logoCell.font = { bold: true, size: 18, color: { argb: 'FF' + WHITE } }
         logoCell.fill = {
           type: 'pattern',
           pattern: 'solid',
