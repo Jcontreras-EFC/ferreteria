@@ -14,35 +14,40 @@ async function searchProductImage(productName) {
       .slice(0, 3) // Tomar las primeras 3 palabras
       .join(' ')
     
-    const searchTerm = encodeURIComponent(cleanName + ' herramienta producto')
-    
-    // Usar Unsplash Source API (gratis, sin API key necesario)
-    // Esta API devuelve imágenes aleatorias relacionadas con el término de búsqueda
-    const unsplashUrl = `https://source.unsplash.com/400x400/?${searchTerm}`
-    
-    // Hacer una petición para obtener la URL real de la imagen
-    const response = await fetch(unsplashUrl, { 
-      method: 'GET',
-      redirect: 'follow',
-      headers: {
-        'User-Agent': 'Mozilla/5.0'
-      }
-    })
-    
-    if (response.ok && response.url && response.url.includes('unsplash.com')) {
-      // La URL de Unsplash Source redirige a la imagen real
-      return response.url
+    if (!cleanName || cleanName.length < 2) {
+      return null
     }
     
-    // Si Unsplash no funciona, intentar con una búsqueda alternativa
-    // Usar un servicio de placeholder que simula búsqueda de productos
-    const alternativeUrl = `https://via.placeholder.com/400x400/22c55e/ffffff?text=${encodeURIComponent(cleanName)}`
+    // Usar Picsum Photos (más confiable que Unsplash Source)
+    // Genera imágenes placeholder de alta calidad
+    const imageId = Math.floor(Math.random() * 1000) + 1
+    const picsumUrl = `https://picsum.photos/400/400?random=${imageId}`
     
-    return alternativeUrl
+    // Verificar que la URL sea accesible
+    try {
+      const testResponse = await fetch(picsumUrl, { 
+        method: 'HEAD',
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+        }
+      })
+      
+      if (testResponse.ok) {
+        return picsumUrl
+      }
+    } catch (fetchError) {
+      console.log('Error verificando Picsum:', fetchError.message)
+    }
+    
+    // Fallback: usar un placeholder con el nombre del producto
+    const placeholderUrl = `https://via.placeholder.com/400x400/22c55e/ffffff?text=${encodeURIComponent(cleanName.substring(0, 20))}`
+    
+    return placeholderUrl
   } catch (error) {
     console.error('Error searching image:', error)
-    // Retornar null si falla, el producto se creará sin imagen
-    return null
+    // Retornar un placeholder genérico si todo falla
+    return `https://via.placeholder.com/400x400/22c55e/ffffff?text=Producto`
   }
 }
 
@@ -63,10 +68,10 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'No autorizado' })
     }
 
-    // Verificar permisos (solo admin, superadmin o cotizador)
-    const allowedRoles = ['admin', 'superadmin', 'cotizador', 'vendedor']
-    if (!allowedRoles.includes(user.role)) {
-      return res.status(403).json({ error: 'No autorizado' })
+    // Verificar permisos - Solo administradores pueden importar productos
+    const adminRoles = ['admin', 'superadmin']
+    if (!adminRoles.includes(user.role?.toLowerCase())) {
+      return res.status(403).json({ error: 'Solo administradores pueden importar productos' })
     }
 
     // Obtener el archivo del FormData
@@ -164,9 +169,16 @@ export default async function handler(req, res) {
         if (!finalImage || finalImage === '') {
           try {
             finalImage = await searchProductImage(name.trim())
+            // Si la búsqueda falla, usar un placeholder con el nombre del producto
+            if (!finalImage) {
+              const cleanName = name.trim().substring(0, 20).replace(/[^a-zA-Z0-9\s]/g, '')
+              finalImage = `https://via.placeholder.com/400x400/22c55e/ffffff?text=${encodeURIComponent(cleanName || 'Producto')}`
+            }
           } catch (error) {
             console.log(`No se pudo buscar imagen para "${name.trim()}":`, error.message)
-            // Continuar sin imagen si falla la búsqueda
+            // Usar placeholder si falla la búsqueda
+            const cleanName = name.trim().substring(0, 20).replace(/[^a-zA-Z0-9\s]/g, '')
+            finalImage = `https://via.placeholder.com/400x400/22c55e/ffffff?text=${encodeURIComponent(cleanName || 'Producto')}`
           }
         }
 

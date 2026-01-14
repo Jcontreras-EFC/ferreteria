@@ -23,7 +23,16 @@ export default function Home() {
       })
       const data = await res.json()
       console.log('Productos recibidos:', data)
-      setProducts(data.slice(0, 8)) // Mostrar solo los primeros 8 productos
+      // Ordenar: productos con imagen primero, pero manteniendo orden cronológico
+      const sortedData = [...data].sort((a, b) => {
+        const aHasImage = a.image && a.image.trim() !== ''
+        const bHasImage = b.image && b.image.trim() !== ''
+        if (aHasImage && !bHasImage) return -1
+        if (!aHasImage && bHasImage) return 1
+        // Si ambos tienen imagen o ambos no tienen, mantener orden cronológico (más antiguos primero)
+        return 0
+      })
+      setProducts(sortedData.slice(0, 8)) // Mostrar solo los primeros 8 productos
       setLoading(false)
     } catch (error) {
       console.error('Error fetching products:', error)

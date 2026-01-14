@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/router'
 import Head from 'next/head'
 import AdminLayout from '../../components/admin/AdminLayout'
-import { FiEdit, FiTrash2, FiPlus, FiDownload, FiSearch, FiFilter, FiGrid, FiList, FiEye, FiPackage, FiDollarSign, FiTrendingUp, FiAlertCircle } from 'react-icons/fi'
+import { FiEdit, FiTrash2, FiPlus, FiDownload, FiSearch, FiFilter, FiGrid, FiList, FiEye, FiPackage, FiDollarSign, FiTrendingUp, FiAlertCircle, FiUpload, FiX, FiCheckCircle, FiXCircle, FiInfo } from 'react-icons/fi'
 import Image from 'next/image'
+import ExcelJS from 'exceljs'
 
 export default function AdminProductos() {
   const router = useRouter()
@@ -22,6 +23,10 @@ export default function AdminProductos() {
   })
   const [uploading, setUploading] = useState(false)
   const [viewMode, setViewMode] = useState('table') // 'cards' or 'table'
+  const [showImportModal, setShowImportModal] = useState(false)
+  const [importFile, setImportFile] = useState(null)
+  const [importing, setImporting] = useState(false)
+  const [notifications, setNotifications] = useState([])
 
   useEffect(() => {
     checkAuth()
@@ -64,7 +69,15 @@ export default function AdminProductos() {
       const res = await fetch(url)
       if (res.ok) {
         const data = await res.json()
-        setProducts(data)
+        // Ordenar: productos con imagen primero
+        const sortedData = [...data].sort((a, b) => {
+          const aHasImage = a.image && a.image.trim() !== ''
+          const bHasImage = b.image && b.image.trim() !== ''
+          if (aHasImage && !bHasImage) return -1
+          if (!aHasImage && bHasImage) return 1
+          return 0
+        })
+        setProducts(sortedData)
       }
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -227,6 +240,229 @@ export default function AdminProductos() {
     }
   }
 
+  const downloadTemplate = async () => {
+    try {
+      const workbook = new ExcelJS.Workbook()
+      const worksheet = workbook.addWorksheet('Formato Productos')
+
+      const GRC_GREEN = '22C55E'
+      const GRC_DARK_GREEN = '14532D'
+      const WHITE = 'FFFFFF'
+
+      const createGRCLogo = () => {
+        return new Promise((resolve) => {
+          const canvas = document.createElement('canvas')
+          canvas.width = 80
+          canvas.height = 80
+          const ctx = canvas.getContext('2d')
+
+          const centerX = canvas.width / 2
+          const centerY = canvas.height / 2
+          const radius = 35
+
+          ctx.beginPath()
+          ctx.arc(centerX, centerY, radius + 2, 0, 2 * Math.PI)
+          ctx.fillStyle = '#FFFFFF'
+          ctx.fill()
+
+          ctx.beginPath()
+          ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI)
+          ctx.fillStyle = '#' + GRC_DARK_GREEN
+          ctx.fill()
+
+          ctx.fillStyle = '#FFFFFF'
+          ctx.font = 'bold 24px Arial'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText('GRC', centerX, centerY)
+
+          canvas.toBlob((blob) => {
+            blob.arrayBuffer().then((arrayBuffer) => {
+              resolve(new Uint8Array(arrayBuffer))
+            })
+          }, 'image/png')
+        })
+      }
+
+      try {
+        const logoBuffer = await createGRCLogo()
+        const imageId = workbook.addImage({
+          buffer: logoBuffer,
+          extension: 'png',
+        })
+        worksheet.addImage(imageId, {
+          tl: { col: 0, row: 0 },
+          ext: { width: 80, height: 80 },
+        })
+        worksheet.getRow(1).height = 60
+      } catch (error) {
+        console.log('Error creando logo GRC:', error)
+        const logoCell = worksheet.getCell('A1')
+        logoCell.value = 'GRC'
+        logoCell.font = { bold: true, size: 18, color: { argb: 'FF' + WHITE } }
+        logoCell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF' + GRC_DARK_GREEN }
+        }
+        logoCell.alignment = { vertical: 'middle', horizontal: 'center' }
+        worksheet.mergeCells('A1:B1')
+        worksheet.getRow(1).height = 60
+      }
+
+      worksheet.getRow(2).height = 20
+
+      const headers = ['Nombre*', 'Descripción', 'Precio*', 'Stock', 'Categoría', 'Imagen (URL)']
+      const headerRow = worksheet.getRow(3)
+
+      headers.forEach((header, index) => {
+        const cell = headerRow.getCell(index + 1)
+        cell.value = header
+        cell.font = { bold: true, size: 11, color: { argb: 'FF' + WHITE } }
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF' + GRC_GREEN }
+        }
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true }
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF' + WHITE } },
+          bottom: { style: 'thin', color: { argb: 'FF' + WHITE } },
+          left: { style: 'thin', color: { argb: 'FF' + WHITE } },
+          right: { style: 'thin', color: { argb: 'FF' + WHITE } }
+        }
+      })
+
+      headerRow.height = 30
+
+      const exampleData = [
+        ['Martillo Profesional', 'Martillo de acero con mango ergonómico', 25.99, 50, 'Herramientas', ''],
+        ['Destornillador Phillips #2', 'Destornillador de punta Phillips tamaño #2', 8.50, 100, 'Herramientas', ''],
+        ['Llave Inglesa Ajustable 10"', 'Llave ajustable de acero cromado', 15.99, 75, 'Herramientas', ''],
+      ]
+
+      exampleData.forEach((row, rowIndex) => {
+        const dataRow = worksheet.getRow(4 + rowIndex)
+        row.forEach((value, colIndex) => {
+          const cell = dataRow.getCell(colIndex + 1)
+          cell.value = value
+          cell.alignment = { vertical: 'middle', horizontal: colIndex === 2 ? 'right' : 'left', wrapText: true }
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            right: { style: 'thin', color: { argb: 'FFE5E7EB' } }
+          }
+
+          if (rowIndex % 2 === 0) {
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFF9FAFB' }
+            }
+          }
+        })
+        dataRow.height = 25
+      })
+
+      worksheet.getColumn(1).width = 30
+      worksheet.getColumn(2).width = 45
+      worksheet.getColumn(3).width = 12
+      worksheet.getColumn(4).width = 10
+      worksheet.getColumn(5).width = 18
+      worksheet.getColumn(6).width = 40
+
+      const buffer = await workbook.xlsx.writeBuffer()
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      const url = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = 'formato-productos.xlsx'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(url)
+      
+      showNotification('Formato descargado exitosamente', 'success')
+    } catch (error) {
+      console.error('Error generando Excel:', error)
+      showNotification('Error al generar el formato', 'error')
+    }
+  }
+
+  const handleImportFile = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+          file.type === 'application/vnd.ms-excel' ||
+          file.name.endsWith('.xlsx') || 
+          file.name.endsWith('.xls')) {
+        setImportFile(file)
+      } else {
+        showNotification('Por favor selecciona un archivo Excel (.xlsx o .xls)', 'error')
+        e.target.value = ''
+      }
+    }
+  }
+
+  const handleImportProducts = async () => {
+    if (!importFile) {
+      showNotification('Por favor selecciona un archivo', 'error')
+      return
+    }
+
+    setImporting(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', importFile)
+
+      const res = await fetch('/api/productos/import', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData,
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        if (data.success > 0) {
+          showNotification(`✅ ${data.success} productos importados exitosamente. ${data.errors > 0 ? `${data.errors} errores.` : ''}`, 'success')
+        } else {
+          showNotification(`⚠️ No se importaron productos. ${data.errors} errores encontrados.`, 'error')
+        }
+        
+        if (data.errorMessages && data.errorMessages.length > 0) {
+          console.error('Errores de importación:', data.errorMessages)
+          const errorSummary = data.errorMessages.slice(0, 3).join('; ')
+          if (data.errorMessages.length > 3) {
+            showNotification(`Errores: ${errorSummary}... (ver consola para más detalles)`, 'error')
+          } else {
+            showNotification(`Errores: ${errorSummary}`, 'error')
+          }
+        }
+        
+        setShowImportModal(false)
+        setImportFile(null)
+        fetchProducts()
+      } else {
+        showNotification(data.error || 'Error al importar productos', 'error')
+      }
+    } catch (error) {
+      console.error('Error importing products:', error)
+      showNotification('Error al importar productos', 'error')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  const showNotification = (message, type = 'success') => {
+    const id = Date.now()
+    setNotifications(prev => [...prev, { id, message, type }])
+    setTimeout(() => {
+      setNotifications(prev => prev.filter(n => n.id !== id))
+    }, 5000)
+  }
+
   const handleLogout = async () => {
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
@@ -247,16 +483,26 @@ export default function AdminProductos() {
     )
   }
 
-  const filteredProducts = products.filter((product) =>
-    product.name.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const getStockStatus = (stock) => {
+    if (stock === 0) return { label: 'Sin Stock', color: 'red', bg: 'bg-red-100', text: 'text-red-800', border: 'border-red-300' }
+    if (stock < 10) return { label: 'Stock Bajo', color: 'orange', bg: 'bg-orange-100', text: 'text-orange-800', border: 'border-orange-300' }
+    if (stock < 50) return { label: 'Stock Medio', color: 'yellow', bg: 'bg-yellow-100', text: 'text-yellow-800', border: 'border-yellow-300' }
+    return { label: 'Stock Alto', color: 'green', bg: 'bg-green-100', text: 'text-green-800', border: 'border-green-300' }
+  }
 
-  // Calcular estadísticas
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (product.description && product.description.toLowerCase().includes(searchQuery.toLowerCase()))
+    return matchesSearch
+  })
+
+  // Calcular estadísticas (igual que en inventario)
   const stats = {
     total: products.length,
-    withStock: products.filter(p => (p.stock || 0) > 0).length,
-    withoutStock: products.filter(p => (p.stock || 0) === 0).length,
-    totalValue: products.reduce((sum, p) => sum + ((p.price || 0) * (p.stock || 0)), 0),
+    outOfStock: products.filter(p => (p.stock || 0) === 0).length,
+    lowStock: products.filter(p => (p.stock || 0) > 0 && (p.stock || 0) < 10).length,
+    mediumStock: products.filter(p => (p.stock || 0) >= 10 && (p.stock || 0) < 50).length,
+    highStock: products.filter(p => (p.stock || 0) >= 50).length,
   }
 
   return (
@@ -270,7 +516,7 @@ export default function AdminProductos() {
           <div className="bg-white rounded-xl shadow-md border border-gray-200 p-3">
             <div className="flex items-center justify-between mb-2">
               <div>
-                <h1 className="text-xl font-bold text-gray-900 uppercase tracking-wide">GESTIÓN DE PRODUCTOS</h1>
+                <h1 className="text-xl font-bold text-gray-900 uppercase tracking-wide">INVENTARIO DE PRODUCTOS</h1>
                 <p className="text-gray-600 text-xs mt-0.5">
                   {products.length} producto{products.length !== 1 ? 's' : ''} en total
                 </p>
@@ -278,14 +524,14 @@ export default function AdminProductos() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setViewMode('cards')}
-                  className={`p-2 rounded-lg transition-all ${viewMode === 'cards' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'cards' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                   title="Vista de cards"
                 >
                   <FiGrid size={16} />
                 </button>
                 <button
                   onClick={() => setViewMode('table')}
-                  className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                  className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
                   title="Vista de tabla"
                 >
                   <FiList size={16} />
@@ -293,8 +539,8 @@ export default function AdminProductos() {
               </div>
             </div>
 
-            {/* Estadísticas Compactas */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {/* Estadísticas Compactas - Igual que inventario */}
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border-2 border-blue-300 shadow-sm">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-blue-800 text-xs font-semibold">Total</span>
@@ -304,32 +550,41 @@ export default function AdminProductos() {
                 </div>
                 <p className="text-2xl font-bold text-blue-900">{stats.total}</p>
               </div>
-              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border-2 border-green-300 shadow-sm">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-green-800 text-xs font-semibold">Con Stock</span>
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md">
-                    <FiTrendingUp className="text-white" size={16} />
-                  </div>
-                </div>
-                <p className="text-2xl font-bold text-green-900">{stats.withStock}</p>
-              </div>
               <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-lg p-3 border-2 border-red-300 shadow-sm">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-red-800 text-xs font-semibold">Sin Stock</span>
                   <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center shadow-md">
+                    <FiXCircle className="text-white" size={16} />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-red-900">{stats.outOfStock}</p>
+              </div>
+              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-3 border-2 border-orange-300 shadow-sm">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-orange-800 text-xs font-semibold">Stock Bajo</span>
+                  <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center shadow-md">
                     <FiAlertCircle className="text-white" size={16} />
                   </div>
                 </div>
-                <p className="text-2xl font-bold text-red-900">{stats.withoutStock}</p>
+                <p className="text-2xl font-bold text-orange-900">{stats.lowStock}</p>
               </div>
-              <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 border-2 border-purple-300 shadow-sm">
+              <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-3 border-2 border-yellow-300 shadow-sm">
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-purple-800 text-xs font-semibold">Valor Total</span>
-                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center shadow-md">
-                    <FiDollarSign className="text-white" size={16} />
+                  <span className="text-yellow-800 text-xs font-semibold">Stock Medio</span>
+                  <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center shadow-md">
+                    <FiAlertCircle className="text-white" size={16} />
                   </div>
                 </div>
-                <p className="text-lg font-bold text-purple-900">S/. {stats.totalValue.toFixed(2)}</p>
+                <p className="text-2xl font-bold text-yellow-900">{stats.mediumStock}</p>
+              </div>
+              <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border-2 border-green-300 shadow-sm">
+                <div className="flex items-center justify-between mb-1">
+                  <span className="text-green-800 text-xs font-semibold">Stock Alto</span>
+                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md">
+                    <FiCheckCircle className="text-white" size={16} />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-green-900">{stats.highStock}</p>
               </div>
             </div>
           </div>
@@ -343,7 +598,7 @@ export default function AdminProductos() {
                   <FiFilter size={16} className="text-gray-600" />
                   <h2 className="text-sm font-bold text-gray-800">Filtros</h2>
                   {searchQuery && (
-                    <span className="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs font-medium">
+                    <span className="px-2 py-0.5 bg-green-100 text-green-800 rounded text-xs font-medium">
                       Filtros activos
                     </span>
                   )}
@@ -354,15 +609,29 @@ export default function AdminProductos() {
                   <FiSearch className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" size={14} />
                   <input
                     type="text"
-                    placeholder="Buscar productos..."
+                    placeholder="Buscar por nombre o descripción..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 text-sm"
+                    className="w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-gray-900 text-sm"
                     style={{ color: '#111827' }}
                   />
                 </div>
 
-                {/* Botones de Exportar y Nuevo */}
+                {/* Botones de Exportar, Importar, Formato y Nuevo */}
+                <button
+                  onClick={downloadTemplate}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+                >
+                  <FiDownload size={14} />
+                  <span>Formato</span>
+                </button>
+                <button
+                  onClick={() => setShowImportModal(true)}
+                  className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+                >
+                  <FiUpload size={14} />
+                  <span>Importar</span>
+                </button>
                 <button
                   onClick={handleExportExcel}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
@@ -396,7 +665,7 @@ export default function AdminProductos() {
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gradient-to-r from-blue-600 to-indigo-700">
+                  <thead className="bg-gradient-to-r from-green-600 to-emerald-700">
                     <tr>
                       <th className="px-5 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                         <div className="flex items-center gap-2">
@@ -507,68 +776,115 @@ export default function AdminProductos() {
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
               {filteredProducts.length === 0 ? (
                 <div className="col-span-full bg-white rounded-xl shadow-md border border-gray-200 p-12 text-center">
                   <FiPackage className="mx-auto text-gray-400" size={48} />
                   <p className="mt-4 text-gray-600 text-lg">No hay productos disponibles</p>
                 </div>
               ) : (
-                filteredProducts.map((product) => (
-                  <div key={product.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 overflow-hidden">
-                    <div className="relative h-48 bg-gray-100">
-                      {product.image ? (
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          <FiPackage size={48} />
+                filteredProducts.map((product) => {
+                  const stock = product.stock || 0
+                  const stockStatus = getStockStatus(stock)
+                  
+                  // Colores formales según el estado de stock
+                  const headerGradient = stockStatus.color === 'green' 
+                    ? 'from-slate-700 via-slate-600 to-slate-700'
+                    : stockStatus.color === 'yellow'
+                    ? 'from-amber-600 via-amber-500 to-amber-600'
+                    : stockStatus.color === 'orange'
+                    ? 'from-orange-600 via-orange-500 to-orange-600'
+                    : 'from-red-700 via-red-600 to-red-700'
+                  
+                  return (
+                    <div 
+                      key={product.id} 
+                      className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-300"
+                    >
+                      {/* Header de la Card con Colores Formales */}
+                      <div className={`bg-gradient-to-br ${headerGradient} p-3 text-white relative`}>
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-semibold truncate mb-0.5">{product.name}</h3>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded text-xs font-medium ${stockStatus.bg} ${stockStatus.text} ${stockStatus.border} flex-shrink-0 ml-2`}>
+                            {stockStatus.color === 'green' && <FiCheckCircle size={10} className="inline mr-0.5" />}
+                            {stockStatus.color === 'yellow' && <FiAlertCircle size={10} className="inline mr-0.5" />}
+                            {stockStatus.color === 'orange' && <FiAlertCircle size={10} className="inline mr-0.5" />}
+                            {stockStatus.color === 'red' && <FiXCircle size={10} className="inline mr-0.5" />}
+                            {stockStatus.label}
+                          </span>
                         </div>
-                      )}
-                    </div>
-                    <div className="p-4">
-                      <h3 className="font-bold text-gray-900 mb-1">{product.name}</h3>
-                      {product.description && (
-                        <p className="text-xs text-gray-500 line-clamp-2 mb-2">{product.description}</p>
-                      )}
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-bold text-green-600">S/. {product.price?.toFixed(2) || '0.00'}</span>
-                        <span
-                          className={`px-2 py-1 text-xs font-semibold rounded-lg ${
-                            (product.stock || 0) > 10
-                              ? 'bg-green-100 text-green-800'
-                              : (product.stock || 0) > 0
-                              ? 'bg-yellow-100 text-yellow-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          Stock: {product.stock || 0}
-                        </span>
+                        <div className="flex items-baseline gap-1.5">
+                          <span className="text-white/90 font-semibold">S/.</span>
+                          <div className="text-xl font-bold">
+                            {product.price?.toFixed(2) || '0.00'}
+                          </div>
+                        </div>
+                        <div className="text-xs text-white/80 mt-1">
+                          Stock: {stock} unidades
+                        </div>
                       </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEdit(product)}
-                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors"
-                        >
-                          <FiEye size={14} />
-                          Editar
-                        </button>
-                        <button
-                          onClick={() => handleDelete(product.id)}
-                          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors"
-                        >
-                          <FiTrash2 size={14} />
-                          Eliminar
-                        </button>
+
+                      {/* Imagen del Producto - Mejorada */}
+                      <div className="relative bg-gray-50 p-2">
+                        {product.image ? (
+                          <img
+                            src={product.image}
+                            alt={product.name}
+                            className="w-full h-28 object-cover rounded border border-gray-200"
+                            onError={(e) => {
+                              e.target.onerror = null
+                              e.target.src = '/placeholder-product.png'
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-28 bg-gray-100 rounded border border-gray-200 flex items-center justify-center">
+                            <FiPackage size={32} className="text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Contenido de la Card - Más Compacto */}
+                      <div className="p-3 space-y-2 bg-white">
+                        {product.description && (
+                          <p className="text-xs text-gray-600 line-clamp-2">{product.description}</p>
+                        )}
+                        
+                        {product.category && (
+                          <div className="flex items-center gap-1.5 text-xs">
+                            <FiTag size={10} className="text-gray-400" />
+                            <span className="text-gray-500">{product.category}</span>
+                          </div>
+                        )}
+                        
+                        {/* Badge de Stock Compacto */}
+                        <div className={`inline-flex items-center justify-between w-full px-2 py-1.5 rounded border ${stockStatus.bg} ${stockStatus.text} ${stockStatus.border}`}>
+                          <span className="text-xs font-medium">{stockStatus.label}</span>
+                          <span className="text-sm font-bold">{stock}</span>
+                        </div>
+
+                        {/* Botones de Acción */}
+                        <div className="flex gap-2 pt-2">
+                          <button
+                            onClick={() => handleEdit(product)}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            <FiEdit size={14} />
+                            Editar
+                          </button>
+                          <button
+                            onClick={() => handleDelete(product.id)}
+                            className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                          >
+                            <FiTrash2 size={14} />
+                            Eliminar
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))
+                  )
+                })
               )}
             </div>
           )}
@@ -590,6 +906,115 @@ export default function AdminProductos() {
             }}
           />
         )}
+
+        {/* Modal de Importación */}
+        {showImportModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-lg max-w-md w-full p-6 shadow-xl">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-bold text-gray-900">Importar Productos desde Excel</h3>
+                <button
+                  onClick={() => {
+                    setShowImportModal(false)
+                    setImportFile(null)
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <FiX size={20} />
+                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Seleccionar archivo Excel
+                  </label>
+                  <input
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={handleImportFile}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                  />
+                  {importFile && (
+                    <p className="mt-2 text-xs text-gray-600">
+                      Archivo seleccionado: {importFile.name}
+                    </p>
+                  )}
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-xs text-blue-800 mb-2">
+                    <strong>Formato requerido:</strong>
+                  </p>
+                  <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
+                    <li><strong>Nombre</strong> (requerido)</li>
+                    <li><strong>Precio</strong> (requerido)</li>
+                    <li>Descripción (opcional)</li>
+                    <li>Stock (opcional, default: 0)</li>
+                    <li>Categoría (opcional)</li>
+                    <li>Imagen (URL, opcional)</li>
+                  </ul>
+                  <button
+                    onClick={downloadTemplate}
+                    className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline"
+                  >
+                    Descargar formato de ejemplo
+                  </button>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2">
+                  <button
+                    onClick={() => {
+                      setShowImportModal(false)
+                      setImportFile(null)
+                    }}
+                    className="px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg text-sm font-medium transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleImportProducts}
+                    disabled={!importFile || importing}
+                    className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white rounded-lg text-sm font-medium transition-colors"
+                  >
+                    {importing ? 'Importando...' : 'Importar'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Notificaciones */}
+        <div className="fixed top-4 right-4 z-50 space-y-2">
+          {notifications.map((notification) => (
+            <div
+              key={notification.id}
+              className={`px-4 py-3 rounded-lg shadow-lg flex items-center space-x-2 min-w-[300px] ${
+                notification.type === 'success'
+                  ? 'bg-green-500 text-white'
+                  : notification.type === 'info'
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-red-500 text-white'
+              }`}
+            >
+              {notification.type === 'success' ? (
+                <FiCheckCircle size={20} />
+              ) : notification.type === 'info' ? (
+                <FiInfo size={20} />
+              ) : (
+                <FiXCircle size={20} />
+              )}
+              <span className="flex-1 text-sm font-medium">{notification.message}</span>
+              <button
+                onClick={() => setNotifications(prev => prev.filter(n => n.id !== notification.id))}
+                className="text-white hover:text-gray-200"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+          ))}
+        </div>
       </AdminLayout>
     </>
   )

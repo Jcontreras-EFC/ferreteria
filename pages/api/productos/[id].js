@@ -29,6 +29,12 @@ export default async function handler(req, res) {
         return res.status(401).json({ error: 'No autorizado' })
       }
 
+      // Solo administradores pueden editar productos
+      const adminRoles = ['admin', 'superadmin']
+      if (!adminRoles.includes(user.role?.toLowerCase())) {
+        return res.status(403).json({ error: 'Solo administradores pueden editar productos' })
+      }
+
       const { name, description, price, image, stock } = req.body
 
       if (!name || !price) {
@@ -212,6 +218,12 @@ export default async function handler(req, res) {
       const user = await getCurrentUser(req)
       if (!user) {
         return res.status(401).json({ error: 'No autorizado' })
+      }
+
+      // Solo administradores pueden eliminar productos
+      const adminRoles = ['admin', 'superadmin']
+      if (!adminRoles.includes(user.role?.toLowerCase())) {
+        return res.status(403).json({ error: 'Solo administradores pueden eliminar productos' })
       }
 
       await prisma.product.delete({

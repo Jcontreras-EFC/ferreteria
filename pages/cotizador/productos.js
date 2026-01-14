@@ -17,6 +17,8 @@ export default function CotizadorProductos() {
   const [importFile, setImportFile] = useState(null)
   const [importing, setImporting] = useState(false)
   const [notifications, setNotifications] = useState([])
+  const [selectedProduct, setSelectedProduct] = useState(null)
+  const [showProductModal, setShowProductModal] = useState(false)
 
   useEffect(() => {
     checkAuth()
@@ -45,7 +47,15 @@ export default function CotizadorProductos() {
       })
       if (res.ok) {
         const data = await res.json()
-        setProducts(data)
+        // Ordenar: productos con imagen primero
+        const sortedData = [...data].sort((a, b) => {
+          const aHasImage = a.image && a.image.trim() !== ''
+          const bHasImage = b.image && b.image.trim() !== ''
+          if (aHasImage && !bHasImage) return -1
+          if (!aHasImage && bHasImage) return 1
+          return 0
+        })
+        setProducts(sortedData)
       }
     } catch (error) {
       console.error('Error fetching products:', error)
@@ -363,6 +373,38 @@ export default function CotizadorProductos() {
     }
   }
 
+  const handleUpdateImages = async () => {
+    if (!confirm('¿Deseas actualizar las imágenes de todos los productos que no tienen imagen? Esto puede tomar unos minutos.')) {
+      return
+    }
+
+    setImporting(true)
+    try {
+      const res = await fetch('/api/productos/actualizar-imagenes', {
+        method: 'POST',
+        credentials: 'include',
+      })
+
+      const data = await res.json()
+
+      if (res.ok) {
+        if (data.updated > 0) {
+          showNotification(`✅ ${data.updated} productos actualizados con imágenes. ${data.errors > 0 ? `${data.errors} errores.` : ''}`, 'success')
+          fetchProducts() // Recargar productos
+        } else {
+          showNotification(data.message || 'No hay productos sin imagen para actualizar', 'info')
+        }
+      } else {
+        showNotification(data.error || 'Error al actualizar imágenes', 'error')
+      }
+    } catch (error) {
+      console.error('Error updating images:', error)
+      showNotification('Error al actualizar imágenes', 'error')
+    } finally {
+      setImporting(false)
+    }
+  }
+
   const showNotification = (message, type = 'success') => {
     const id = Date.now()
     setNotifications(prev => [...prev, { id, message, type }])
@@ -667,7 +709,7 @@ export default function CotizadorProductos() {
                 </select>
               </div>
 
-              {/* Botones de Exportar e Importar */}
+              {/* Botones de Exportar e Importar - Solo para Admin */}
               <button
                 onClick={downloadTemplate}
                 className="flex items-center gap-1 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
@@ -675,13 +717,26 @@ export default function CotizadorProductos() {
                 <FiDownload size={14} />
                 <span>Formato</span>
               </button>
-              <button
-                onClick={() => setShowImportModal(true)}
-                className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
-              >
-                <FiUpload size={14} />
-                <span>Importar</span>
-              </button>
+              {(user?.role === 'admin' || user?.role === 'superadmin') && (
+                <>
+                  <button
+                    onClick={() => setShowImportModal(true)}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+                  >
+                    <FiUpload size={14} />
+                    <span>Importar</span>
+                  </button>
+                  <button
+                    onClick={handleUpdateImages}
+                    disabled={importing}
+                    className="flex items-center gap-1 px-3 py-1.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-400 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
+                    title="Actualizar imágenes de productos sin foto"
+                  >
+                    <FiUpload size={14} />
+                    <span>{importing ? 'Actualizando...' : 'Actualizar Imágenes'}</span>
+                  </button>
+                </>
+              )}
               <button
                 onClick={exportToExcel}
                 className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition-colors whitespace-nowrap"
@@ -729,13 +784,19 @@ export default function CotizadorProductos() {
                   : 'from-red-700 via-red-600 to-red-700'
                 
                 return (
-                  <div key={product.id} className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-300">
+                  <div 
+                    key={product.id} 
+                    className="group bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-200 overflow-hidden border border-gray-300 cursor-pointer"
+                    onClick={() => {
+                      setSelectedProduct(product)
+                      setShowProductModal(true)
+                    }}
+                  >
                     {/* Header de la Card con Colores Formales */}
                     <div className={`bg-gradient-to-br ${headerGradient} p-3 text-white relative`}>
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-semibold truncate mb-0.5">{product.name}</h3>
-                          <div className="text-xs text-white/80">ID: {product.id.slice(0, 6)}</div>
                         </div>
                         <span className={`px-2 py-0.5 rounded text-xs font-medium ${stockStatus.bg} ${stockStatus.text} ${stockStatus.border} flex-shrink-0 ml-2`}>
                           {stockStatus.color === 'green' && <FiCheckCircle size={10} className="inline mr-0.5" />}
@@ -746,9 +807,9 @@ export default function CotizadorProductos() {
                         </span>
                       </div>
                       <div className="flex items-baseline gap-1.5">
-                        <FiDollarSign size={14} className="text-white/90" />
+                        <span className="text-white/90 font-semibold">S/.</span>
                         <div className="text-xl font-bold">
-                          S/. {product.price?.toFixed(2) || '0.00'}
+                          {product.price?.toFixed(2) || '0.00'}
                         </div>
                       </div>
                       <div className="text-xs text-white/80 mt-1">
@@ -912,9 +973,9 @@ export default function CotizadorProductos() {
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">
-                            <div className="flex items-center gap-2">
-                              <FiDollarSign className="text-green-600" size={16} />
-                              <span className="text-green-700 font-bold text-base">S/. {product.price?.toFixed(2) || '0.00'}</span>
+                            <div className="flex items-center gap-1">
+                              <span className="text-green-700 font-semibold text-sm">S/.</span>
+                              <span className="text-green-700 font-bold text-base">{product.price?.toFixed(2) || '0.00'}</span>
                             </div>
                           </td>
                           <td className="px-6 py-5 whitespace-nowrap">
@@ -1067,6 +1128,93 @@ export default function CotizadorProductos() {
             </div>
           ))}
         </div>
+
+        {/* Modal de Vista Ampliada del Producto */}
+        {showProductModal && selectedProduct && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setShowProductModal(false)}>
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+                <h2 className="text-2xl font-bold text-gray-900">{selectedProduct.name}</h2>
+                <button
+                  onClick={() => setShowProductModal(false)}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FiX size={24} />
+                </button>
+              </div>
+
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Imagen del Producto */}
+                  <div className="space-y-4">
+                    {selectedProduct.image ? (
+                      <div className="relative bg-gray-50 rounded-lg overflow-hidden border-2 border-gray-200">
+                        <img
+                          src={selectedProduct.image}
+                          alt={selectedProduct.name}
+                          className="w-full h-96 object-contain"
+                          onError={(e) => {
+                            e.target.onerror = null
+                            e.target.src = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="400"%3E%3Crect width="400" height="400" fill="%23f3f4f6"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" dy=".3em" fill="%239ca3af" font-size="16"%3ESin imagen%3C/text%3E%3C/svg%3E'
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-full h-96 bg-gradient-to-br from-gray-100 to-gray-200 rounded-lg border-2 border-gray-300 flex items-center justify-center">
+                        <FiPackage className="text-gray-400" size={80} />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Información del Producto */}
+                  <div className="space-y-6">
+                    {/* Precio y Stock */}
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg p-6 border-2 border-green-200">
+                      <div className="flex items-baseline gap-2 mb-4">
+                        <span className="text-green-700 font-semibold text-lg">S/.</span>
+                        <span className="text-green-700 font-bold text-4xl">{selectedProduct.price?.toFixed(2) || '0.00'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-600 font-medium">Stock disponible:</span>
+                        <span className={`text-lg font-bold px-4 py-2 rounded-lg ${
+                          (selectedProduct.stock || 0) >= 50 
+                            ? 'bg-green-100 text-green-700 border-2 border-green-300'
+                            : (selectedProduct.stock || 0) >= 10
+                            ? 'bg-yellow-100 text-yellow-700 border-2 border-yellow-300'
+                            : (selectedProduct.stock || 0) > 0
+                            ? 'bg-orange-100 text-orange-700 border-2 border-orange-300'
+                            : 'bg-red-100 text-red-700 border-2 border-red-300'
+                        }`}>
+                          {selectedProduct.stock || 0} unidades
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Descripción */}
+                    {selectedProduct.description && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Descripción</h3>
+                        <p className="text-gray-600 leading-relaxed">{selectedProduct.description}</p>
+                      </div>
+                    )}
+
+                    {/* Categoría */}
+                    {selectedProduct.category && (
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Categoría</h3>
+                        <div className="flex items-center gap-2">
+                          <FiTag className="text-purple-600" size={18} />
+                          <span className="text-gray-700">{selectedProduct.category}</span>
+                        </div>
+                      </div>
+                    )}
+
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </CotizadorLayout>
   )

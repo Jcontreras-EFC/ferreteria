@@ -29,6 +29,7 @@ export default async function handler(req, res) {
     })
     
     const nextQuoteNumber = lastQuote ? (lastQuote.quoteNumber || 0) + 1 : 1
+    const quoteNumberFormatted = `#${nextQuoteNumber}` // Formato "#60"
 
     // Guardar en la base de datos (incluir documentType, datos fiscales y productos no encontrados en el JSON de products como metadata)
     const productsWithMetadata = {
@@ -61,26 +62,45 @@ export default async function handler(req, res) {
 
     if (n8nWebhookUrl) {
       try {
+        // Formatear productos para el carrito (formato que espera N8N)
+        const carritoFormato = products.map(product => ({
+          nombre: product.name || product.nombre || '',
+          cantidad: product.quantity || product.cantidad || 1,
+          precio: product.price || product.precio || 0
+        }))
+
+        // Formatear productos no encontrados
+        const productosNoEncontradosFormato = notFoundProducts && notFoundProducts.length > 0
+          ? notFoundProducts.filter(p => p.name && p.name.trim() !== '')
+          : []
+
+        // Enviar en el formato que espera N8N
         await fetch(n8nWebhookUrl, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            quoteId: quote.id,
-            name,
-            email,
-            whatsapp,
-            products,
-            total,
-            documentType: documentType || 'boleta',
-            ruc: documentType === 'factura' ? ruc : null,
-            businessName: documentType === 'factura' ? businessName : null,
-            address: documentType === 'factura' ? address : null,
-            notFoundProducts: notFoundProducts && notFoundProducts.length > 0 
-              ? notFoundProducts.filter(p => p.name && p.name.trim() !== '')
-              : null,
-            createdAt: quote.createdAt,
+            params: {},
+            query: {},
+            body: {
+              'cliente[nombre]': name,
+              'cliente[email]': email,
+              'cliente[whatsapp]': whatsapp,
+              'carrito': JSON.stringify(carritoFormato),
+              'productosNoEncontrados': JSON.stringify(productosNoEncontradosFormato),
+              'quoteId': quote.id,
+              'quoteNumber': nextQuoteNumber,
+              'numeroCotizacion': quoteNumberFormatted,
+              'total': total,
+              'documentType': documentType || 'boleta',
+              'ruc': documentType === 'factura' ? ruc : null,
+              'businessName': documentType === 'factura' ? businessName : null,
+              'address': documentType === 'factura' ? address : null,
+              'createdAt': quote.createdAt.toISOString(),
+            },
+            webhookUrl: n8nWebhookUrl,
+            executionMode: 'production'
           }),
         })
       } catch (webhookError) {

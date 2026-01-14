@@ -25,7 +25,16 @@ export default function Productos() {
         : '/api/productos'
       const res = await fetch(url)
       const data = await res.json()
-      setProducts(data)
+      // Ordenar: productos con imagen primero, pero manteniendo orden cronológico
+      const sortedData = [...data].sort((a, b) => {
+        const aHasImage = a.image && a.image.trim() !== ''
+        const bHasImage = b.image && b.image.trim() !== ''
+        if (aHasImage && !bHasImage) return -1
+        if (!aHasImage && bHasImage) return 1
+        // Si ambos tienen imagen o ambos no tienen, mantener orden cronológico (más antiguos primero)
+        return 0
+      })
+      setProducts(sortedData)
       setLoading(false)
     } catch (error) {
       console.error('Error fetching products:', error)
