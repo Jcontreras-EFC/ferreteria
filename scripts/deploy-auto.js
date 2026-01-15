@@ -11,6 +11,29 @@ console.log('📝 Guarda cualquier archivo y se desplegará automáticamente a V
 let deployTimeout = null
 let isDeploying = false
 
+function build() {
+  return new Promise((resolve) => {
+    console.log('📦 Ejecutando build...\n')
+    
+    exec('npm run build', (error, stdout, stderr) => {
+      if (error) {
+        console.error('❌ Error en build:', error.message)
+        resolve(false)
+        return
+      }
+      
+      console.log('✅ Build completado!\n')
+      console.log(stdout)
+      
+      if (stderr) {
+        console.error('⚠️  Advertencias en build:', stderr)
+      }
+      
+      resolve(true)
+    })
+  })
+}
+
 function deploy() {
   if (isDeploying) {
     console.log('⏳ Ya hay un deploy en proceso, esperando...\n')
@@ -37,6 +60,13 @@ function deploy() {
   })
 }
 
+async function buildAndDeploy() {
+  const buildOk = await build()
+  if (buildOk) {
+    deploy()
+  }
+}
+
 // Observar cambios en archivos importantes
 const watcher = chokidar.watch([
   'components/**/*.js',
@@ -55,13 +85,13 @@ const watcher = chokidar.watch([
 watcher.on('change', (filePath) => {
   console.log(`📝 Archivo modificado: ${filePath}`)
   
-  // Esperar 2 segundos antes de hacer deploy (por si guardas varios archivos)
+  // Esperar 2 segundos antes de hacer build y deploy (por si guardas varios archivos)
   if (deployTimeout) {
     clearTimeout(deployTimeout)
   }
   
   deployTimeout = setTimeout(() => {
-    deploy()
+    buildAndDeploy()
   }, 2000)
 })
 

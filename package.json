@@ -17,7 +17,8 @@
     "create-cotizador": "node scripts/create-cotizador.js",
     "deploy": "vercel --prod --yes",
     "deploy:auto": "npm run build && vercel --prod --yes",
-    "auto": "node scripts/ejecutar-automatico.js"
+    "auto:deploy": "node scripts/auto-build-deploy.js",
+    "watch": "node scripts/deploy-auto.js"
   },
   "dependencies": {
     "@prisma/client": "^5.7.1",
@@ -28,7 +29,6 @@
     "bcryptjs": "^2.4.3",
     "exceljs": "^4.4.0",
     "formidable": "^3.5.4",
-    "html2canvas": "^1.4.1",
     "js-cookie": "^3.0.5",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^3.0.4",
@@ -46,6 +46,7 @@
     "@types/jsonwebtoken": "^9.0.5",
     "autoprefixer": "^10.4.16",
     "better-sqlite3": "^12.5.0",
+    "chokidar": "^3.6.0",
     "dotenv": "^17.2.3",
     "eslint": "^8.56.0",
     "eslint-config-next": "^14.0.4",

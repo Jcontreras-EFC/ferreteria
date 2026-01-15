@@ -283,36 +283,44 @@ export default function MisCotizaciones() {
               Aquí puedes ver el historial de cotizaciones que has enviado desde tu cuenta.
             </p>
 
-            {/* Estadísticas */}
+            {/* Estadísticas con colores como admin */}
             {!loading && !error && quotes.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Total</span>
-                    <FiFileText className="text-blue-600" size={20} />
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border-2 border-blue-300 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-blue-800 text-xs font-semibold">Total</span>
+                    <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center shadow-md">
+                      <FiFileText className="text-white" size={16} />
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-2xl font-bold text-blue-900">{stats.total}</p>
                 </div>
-                <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Total Monto</span>
-                    <FiDollarSign className="text-green-600" size={20} />
+                <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border-2 border-green-300 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-green-800 text-xs font-semibold">Total Monto</span>
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shadow-md">
+                      <FiDollarSign className="text-white" size={16} />
+                    </div>
                   </div>
-                  <p className="text-lg font-bold text-gray-900">{formatCurrency(stats.totalAmount)}</p>
+                  <p className="text-lg font-bold text-green-900">{formatCurrency(stats.totalAmount)}</p>
                 </div>
-                <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Aprobadas</span>
-                    <FiCheckCircle className="text-green-600" size={20} />
+                <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-lg p-3 border-2 border-emerald-300 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-emerald-800 text-xs font-semibold">Aprobadas</span>
+                    <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center shadow-md">
+                      <FiCheckCircle className="text-white" size={16} />
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
+                  <p className="text-2xl font-bold text-emerald-900">{stats.approved}</p>
                 </div>
-                <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">Pendientes</span>
-                    <FiClock className="text-yellow-600" size={20} />
+                <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-lg p-3 border-2 border-yellow-300 shadow-sm">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-yellow-800 text-xs font-semibold">Pendientes</span>
+                    <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center shadow-md">
+                      <FiClock className="text-white" size={16} />
+                    </div>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                  <p className="text-2xl font-bold text-yellow-900">{stats.pending}</p>
                 </div>
               </div>
             )}
@@ -350,6 +358,24 @@ export default function MisCotizaciones() {
                       <option value="priceDesc">Precio: Mayor a menor</option>
                       <option value="priceAsc">Precio: Menor a mayor</option>
                     </select>
+
+                    {/* Botones de vista */}
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setViewMode('table')}
+                        className={`p-2 rounded-lg transition-all ${viewMode === 'table' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        title="Vista de tabla"
+                      >
+                        <FiList size={16} />
+                      </button>
+                      <button
+                        onClick={() => setViewMode('cards')}
+                        className={`p-2 rounded-lg transition-all ${viewMode === 'cards' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        title="Vista de cards"
+                      >
+                        <FiGrid size={16} />
+                      </button>
+                    </div>
 
                     {/* Botones */}
                     <button
@@ -479,34 +505,34 @@ export default function MisCotizaciones() {
                   Ver Productos
                 </a>
               </div>
-            ) : (
+            ) : viewMode === 'table' ? (
               <div className="bg-white rounded-lg shadow-lg overflow-hidden border border-gray-200">
                 <div className="overflow-x-auto">
                   <table className="w-full">
-                    <thead className="bg-gradient-to-r from-blue-600 to-blue-700">
+                    <thead className="bg-gradient-to-r from-blue-600 to-indigo-700">
                       <tr>
-                        <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
+                        <th className="px-5 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                           <div className="flex items-center gap-2">
                             <FiFileText size={14} />
                             N° Cotización
                           </div>
                         </th>
-                        <th className="px-6 py-4 text-left text-sm font-bold text-white uppercase tracking-wider">
+                        <th className="px-5 py-4 text-left text-xs font-bold text-white uppercase tracking-wider">
                           <div className="flex items-center gap-2">
                             <FiCalendar size={14} />
                             Fecha
                           </div>
                         </th>
-                        <th className="px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider">
+                        <th className="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">
                           <div className="flex items-center justify-center gap-2">
                             <FiDollarSign size={14} />
                             Total
                           </div>
                         </th>
-                        <th className="px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider">
+                        <th className="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">
                           Estado
                         </th>
-                        <th className="px-6 py-4 text-center text-sm font-bold text-white uppercase tracking-wider">
+                        <th className="px-6 py-4 text-center text-xs font-bold text-white uppercase tracking-wider">
                           Acciones
                         </th>
                       </tr>
@@ -523,29 +549,51 @@ export default function MisCotizaciones() {
                       ) : (
                         filteredAndSortedQuotes.map((quote, index) => {
                           const statusStyle = getStatusColor(quote.status)
+                          const quoteNumber = quote.quoteNumber 
+                            ? String(quote.quoteNumber).padStart(7, '0')
+                            : quote.id.slice(0, 8).toUpperCase()
                           return (
                             <tr 
                               key={quote.id} 
-                              className="hover:bg-blue-50 transition-colors"
+                              className={`transition-colors ${
+                                index % 2 === 0 
+                                  ? 'bg-white hover:bg-blue-50' 
+                                  : 'bg-gray-50 hover:bg-blue-50'
+                              }`}
                             >
-                              <td className="px-6 py-4 whitespace-nowrap">
-                                <div className="text-sm font-mono text-gray-900">
-                                  #{quote.id.slice(0, 8).toUpperCase()}
+                              <td className="px-5 py-4 whitespace-nowrap">
+                                <div className="flex items-center gap-2">
+                                  <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <FiFileText size={14} className="text-blue-600" />
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-bold text-gray-900">#{quoteNumber}</div>
+                                    {quote.quoteNumber && (
+                                      <div className="text-xs text-gray-500 font-mono">ID: {quote.id.slice(0, 8)}</div>
+                                    )}
+                                  </div>
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap">
+                              <td className="px-5 py-4 whitespace-nowrap">
                                 <div className="text-sm text-gray-700 flex items-center gap-2">
-                                  <FiCalendar size={14} className="text-gray-400" />
-                                  {formatDate(quote.createdAt)}
+                                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <FiCalendar size={14} className="text-purple-600" />
+                                  </div>
+                                  <span className="font-medium">{formatDate(quote.createdAt)}</span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-center">
-                                <div className="text-sm font-semibold text-gray-900">
-                                  {formatCurrency(quote.total)}
+                                <div className="flex items-center justify-center gap-2">
+                                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <FiDollarSign size={14} className="text-green-600" />
+                                  </div>
+                                  <span className="text-base font-bold text-green-600">
+                                    {formatCurrency(quote.total)}
+                                  </span>
                                 </div>
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-center">
-                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
+                                <span className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-bold border-2 shadow-sm ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border}`}>
                                   {statusStyle.label}
                                 </span>
                               </td>
@@ -554,7 +602,7 @@ export default function MisCotizaciones() {
                                   href={`/api/cotizaciones/${quote.id}/pdf`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-colors"
+                                  className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-xs font-semibold transition-all shadow-md hover:shadow-lg"
                                 >
                                   <FiFileText size={14} />
                                   Ver PDF
@@ -567,6 +615,71 @@ export default function MisCotizaciones() {
                     </tbody>
                   </table>
                 </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {filteredAndSortedQuotes.length === 0 ? (
+                  <div className="col-span-full bg-white rounded-lg shadow-lg p-12 text-center border border-gray-200">
+                    <FiFileText className="mx-auto text-gray-400 mb-3" size={48} />
+                    <p className="text-gray-600 text-lg">No se encontraron cotizaciones</p>
+                    <p className="text-gray-500 text-sm mt-2">Intenta ajustar los filtros</p>
+                  </div>
+                ) : (
+                  filteredAndSortedQuotes.map((quote) => {
+                    const statusStyle = getStatusColor(quote.status)
+                    const quoteNumber = quote.quoteNumber 
+                      ? String(quote.quoteNumber).padStart(7, '0')
+                      : quote.id.slice(0, 8).toUpperCase()
+                    return (
+                      <div key={quote.id} className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 overflow-hidden group">
+                        {/* Header de la Card */}
+                        <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-700 p-4 text-white relative overflow-hidden">
+                          <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                          <div className="absolute bottom-0 left-0 w-16 h-16 bg-white/5 rounded-full -ml-8 -mb-8"></div>
+                          <div className="relative z-10">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center ring-2 ring-white/30">
+                                  <FiFileText size={18} />
+                                </div>
+                                <div>
+                                  <h3 className="font-bold text-sm">Cotización</h3>
+                                  <p className="text-xs text-blue-100 font-mono">#{quoteNumber}</p>
+                                </div>
+                              </div>
+                              <span className={`px-2.5 py-1 rounded-lg text-xs font-bold shadow-md ${statusStyle.bg} ${statusStyle.text} ${statusStyle.border} flex items-center gap-1`}>
+                                {statusStyle.label}
+                              </span>
+                            </div>
+                            <div className="text-2xl font-bold mt-2">
+                              {formatCurrency(quote.total)}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Contenido de la Card */}
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <FiCalendar size={16} className="text-gray-400" />
+                            <span>{formatDate(quote.createdAt)}</span>
+                          </div>
+                          
+                          <div className="pt-3 border-t">
+                            <a
+                              href={`/api/cotizaciones/${quote.id}/pdf`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white rounded-lg text-sm font-semibold transition-all shadow-md hover:shadow-lg"
+                            >
+                              <FiFileText size={16} />
+                              Ver PDF
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
             )}
           </div>
