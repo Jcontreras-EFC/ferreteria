@@ -196,6 +196,7 @@ export default async function handler(req, res) {
               price: priceNum,
               stock: stockNum,
               image: finalImage || existing.image,
+              category: category?.trim() || existing.category,
             },
           })
           success++
@@ -208,6 +209,7 @@ export default async function handler(req, res) {
               price: priceNum,
               stock: stockNum,
               image: finalImage,
+              category: category?.trim() || null,
             },
           })
           success++

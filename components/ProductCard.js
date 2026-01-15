@@ -64,6 +64,13 @@ export default function ProductCard({ product }) {
             {product.description}
           </p>
         )}
+        {product.category && (
+          <div className="flex items-center gap-1.5 mb-3">
+            <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+              {product.category}
+            </span>
+          </div>
+        )}
         {isAuthenticated && (
           <div className="flex items-center justify-between mb-3">
             <p className="text-2xl font-bold text-green-600">

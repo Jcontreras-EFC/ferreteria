@@ -121,6 +121,7 @@ async function main() {
             price: price,
             image: product.imagen || null,
             stock: product.stock ? parseInt(product.stock) || 0 : 0,
+            category: product.categoría || product.category || product.categoria || null,
           },
         })
 

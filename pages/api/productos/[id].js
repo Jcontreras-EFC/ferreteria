@@ -35,7 +35,7 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Solo administradores pueden editar productos' })
       }
 
-      const { name, description, price, image, stock } = req.body
+      const { name, description, price, image, stock, category } = req.body
 
       if (!name || !price) {
         return res.status(400).json({ error: 'Nombre y precio son requeridos' })
@@ -63,6 +63,7 @@ export default async function handler(req, res) {
           price: newPrice,
           image: image || null,
           stock: parseInt(stock) || 0,
+          category: category || null,
         },
       })
 

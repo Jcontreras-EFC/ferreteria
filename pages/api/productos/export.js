@@ -24,6 +24,7 @@ export default async function handler(req, res) {
       Descripción: product.description || '',
       Precio: product.price,
       Stock: product.stock || 0,
+      Categoría: product.category || '',
       Imagen: product.image || '',
       'Fecha Creación': new Date(product.createdAt).toLocaleDateString(),
     }))
@@ -39,6 +40,7 @@ export default async function handler(req, res) {
       { wch: 50 }, // Descripción
       { wch: 15 }, // Precio
       { wch: 10 }, // Stock
+      { wch: 20 }, // Categoría
       { wch: 40 }, // Imagen
       { wch: 20 }, // Fecha
     ]

@@ -84,6 +84,16 @@ export default function ProductModal({ product, onClose, onAddToCart }) {
               </p>
             </div>
 
+            {/* Categoría */}
+            {product.category && (
+              <div className="border-t border-gray-200 pt-4">
+                <p className="text-sm text-gray-500 mb-1">Categoría</p>
+                <p className="text-gray-900 font-medium">
+                  {product.category}
+                </p>
+              </div>
+            )}
+
             {/* Precio */}
             {isAuthenticated && (
               <div className="border-t border-gray-200 pt-4">

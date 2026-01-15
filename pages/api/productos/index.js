@@ -12,7 +12,7 @@ export default async function handler(req, res) {
       let where = {}
 
       if (search) {
-        // SQLite no soporta mode: 'insensitive', usamos contains sin mode
+        // Búsqueda en nombre y descripción (temporalmente sin category para evitar errores)
         where = {
           OR: [
             { name: { contains: search } },
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Solo administradores pueden crear productos' })
       }
 
-      const { name, description, price, image, stock } = req.body
+      const { name, description, price, image, stock, category } = req.body
 
       if (!name || !price) {
         return res.status(400).json({ error: 'Nombre y precio son requeridos' })
@@ -94,6 +94,7 @@ export default async function handler(req, res) {
           price: parseFloat(price),
           image: image || null,
           stock: parseInt(stock) || 0,
+          category: category || null,
         },
       })
 

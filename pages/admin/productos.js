@@ -28,6 +28,7 @@ export default function AdminProductos() {
     price: '',
     image: '',
     stock: '',
+    category: '',
   })
   const [uploading, setUploading] = useState(false)
   const [viewMode, setViewMode] = useState('table') // 'cards' or 'table'
@@ -108,6 +109,7 @@ export default function AdminProductos() {
         price: editingProduct.price != null ? String(editingProduct.price) : '',
         image: editingProduct.image || '',
         stock: editingProduct.stock != null ? String(editingProduct.stock) : '0',
+        category: editingProduct.category || '',
       }
       console.log('🟢 useEffect - Cargando datos del producto:', productData)
       // Forzar actualización de formData
@@ -127,6 +129,7 @@ export default function AdminProductos() {
       price: product.price != null ? String(product.price) : '',
       image: product.image || '',
       stock: product.stock != null ? String(product.stock) : '0',
+      category: product.category || '',
     }
     console.log('🔵 handleEdit - Datos preparados:', productData)
     
@@ -654,7 +657,7 @@ export default function AdminProductos() {
                 </button>
                 <button
                   onClick={() => {
-                    const emptyData = { name: '', description: '', price: '', image: '', stock: '' }
+                    const emptyData = { name: '', description: '', price: '', image: '', stock: '', category: '' }
                     setFormData(emptyData)
                     setEditingProduct(null)
                     setShowModal(true)
@@ -1198,12 +1201,13 @@ function ProductModal({ editingProduct, formData, setFormData, uploading, handle
         price: editingProduct.price != null ? String(editingProduct.price) : '',
         image: editingProduct.image || '',
         stock: editingProduct.stock != null ? String(editingProduct.stock) : '0',
+        category: editingProduct.category || '',
       }
       console.log('🟡 ProductModal useMemo - Datos calculados:', data)
       return data
     }
-    return { name: '', description: '', price: '', image: '', stock: '' }
-  }, [editingProduct?.id, editingProduct?.name, editingProduct?.description, editingProduct?.price, editingProduct?.image, editingProduct?.stock])
+    return { name: '', description: '', price: '', image: '', stock: '', category: '' }
+  }, [editingProduct?.id, editingProduct?.name, editingProduct?.description, editingProduct?.price, editingProduct?.image, editingProduct?.stock, editingProduct?.category])
 
   // Estado local para las ediciones del usuario
   const [localFormData, setLocalFormData] = useState(computedFormData)
@@ -1367,6 +1371,24 @@ function ProductModal({ editingProduct, formData, setFormData, uploading, handle
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
                     />
                   </div>
+                </div>
+
+                <div>
+                  <label htmlFor="edit-category" className="block text-sm font-medium text-gray-700 mb-2">
+                    Categoría
+                  </label>
+                  <input
+                    id="edit-category"
+                    name="category"
+                    type="text"
+                    value={hasUserEdited ? localFormData?.category ?? '' : computedFormData?.category ?? ''}
+                    onChange={(e) => {
+                      setHasUserEdited(true)
+                      setLocalFormData({ ...localFormData, category: e.target.value })
+                    }}
+                    placeholder="Ej: Herramientas, Materiales, etc."
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
+                  />
                 </div>
 
                 <div>

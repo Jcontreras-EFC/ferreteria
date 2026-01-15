@@ -72,7 +72,8 @@ export default function CotizadorProductos() {
   const filteredProducts = products.filter(product => {
     const matchesSearch = searchQuery === '' ||
       product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.description?.toLowerCase().includes(searchQuery.toLowerCase())
+      product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.category?.toLowerCase().includes(searchQuery.toLowerCase())
     
     const stock = product.stock || 0
     let matchesStock = true
